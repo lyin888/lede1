@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+#-- Copyright (C) 2018 dz <dingzhong110@gmail.com>
+
+START=99
+
+start(){
+	echo "enable"
+	enable=$(uci get bbr.config.enabled 2>/dev/null)
+	if [ $enable -eq 1 ]; then
+		echo "enable"
+		insmod tcp_bbr
+		echo "tcp_bbr" > /etc/modules.d/bbr
+		sed -i '/bbr/d' /etc/sysctl.conf
+		echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+		echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+		sysctl -p
+	fi
+}
+
+stop(){
+	echo "stop"
+    enable=$(uci get bbr.config.enabled 2>/dev/null)	
+    if [ $enable -ne 1 ]; then
+	echo "disable"
+	rmmod tcp_bbr
+	echo "net.ipv4.tcp_congestion_control=cubic" >> /etc/sysctl.conf
+	sed -i '/bbr/d' /etc/sysctl.conf
+	sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+	sysctl -p
+	sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+	sysctl -p
+	fi
+}

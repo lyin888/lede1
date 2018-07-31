@@ -13,8 +13,10 @@ s.addremove = false
 s.anonymous = true
 
 s:tab("basic", translate("Basic Setting"))
- enable = s:taboption("basic",Flag, "enabled", translate("Enable"))
+enable = s:taboption("basic",Flag, "enabled", translate("Enable"))
+enable.default = 0
 enable.rmempty = false
+
 function enable.cfgvalue(self, section)
 	return luci.sys.init.enabled("vlmcsd") and self.enabled or self.disabled
 end

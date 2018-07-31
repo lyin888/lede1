@@ -144,6 +144,17 @@ $(eval $(call nf_add,IPT_CLUSTERIP,CONFIG_IP_NF_TARGET_CLUSTERIP, $(P_V4)ipt_CLU
 $(eval $(call nf_add,IPT_IPSEC,CONFIG_IP_NF_MATCH_AH, $(P_V4)ipt_ah))
 $(eval $(call nf_add,IPT_IPSEC,CONFIG_NETFILTER_XT_MATCH_ESP, $(P_XT)xt_esp))
 $(eval $(call nf_add,IPT_IPSEC,CONFIG_NETFILTER_XT_MATCH_POLICY, $(P_XT)xt_policy))
+$(eval $(call nf_add,IPT_IPV6,CONFIG_IP6_NF_TARGET_IMQ, $(P_V6)ip6t_IMQ))
+
+# imq
+$(eval $(call nf_add,IPT_IMQ,CONFIG_IP_NF_TARGET_IMQ, $(P_V4)ipt_IMQ))
+$(eval $(call nf_add,IPT_IMQ,CONFIG_NETFILTER_XT_TARGET_IMQ, $(P_XT)xt_IMQ))
+
+# gargoyle netfilter modules
+$(eval $(call nf_add,IPT_BANDWIDTH,CONFIG_IP_NF_MATCH_BANDWIDTH, $(P_V4)ipt_bandwidth))
+$(eval $(call nf_add,IPT_TIMERANGE,CONFIG_IP_NF_MATCH_TIMERANGE, $(P_V4)ipt_timerange))
+$(eval $(call nf_add,IPT_WEBMON,CONFIG_IP_NF_MATCH_WEBMON, $(P_V4)ipt_webmon))
+$(eval $(call nf_add,IPT_WEBURL,CONFIG_IP_NF_MATCH_WEBURL, $(P_V4)ipt_weburl))
 
 # flow offload support
 $(eval $(call nf_add,IPT_FLOW,CONFIG_NETFILTER_XT_TARGET_FLOWOFFLOAD, $(P_XT)xt_FLOWOFFLOAD))
@@ -389,6 +400,11 @@ IPT_BUILTIN += $(IPT_NAT6-y)
 IPT_BUILTIN += $(IPT_NAT_EXTRA-y)
 IPT_BUILTIN += $(NF_NATHELPER-y)
 IPT_BUILTIN += $(NF_NATHELPER_EXTRA-y)
+IPT_BUILTIN += $(IPT_IMQ-y)
+IPT_BUILTIN += $(IPT_BANDWIDTH-y)
+IPT_BUILTIN += $(IPT_TIMERANGE-y)
+IPT_BUILTIN += $(IPT_WEBMON-y)
+IPT_BUILTIN += $(IPT_WEBURL-y)
 IPT_BUILTIN += $(IPT_ULOG-y)
 IPT_BUILTIN += $(IPT_TPROXY-y)
 IPT_BUILTIN += $(NFNETLINK-y)

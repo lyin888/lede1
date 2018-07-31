@@ -7,9 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=v2ray
-PKG_VERSION:=v3.14
-#PKG_VERSION:=$(shell wget https://api.github.com/repos/v2ray/v2ray-core/releases/latest -q -O -|grep tag_name|awk {'print $2'}|cut -d '"' -f 2)
-#PKG_RELEASE:=$(shell wget https://api.github.com/repos/v2ray/v2ray-core/releases/latest -q -O -|grep published_at|awk {'print $2'}|cut -d '"' -f 2|cut -d 'T' -f 1)
+PKG_VERSION:=v3.32.1
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 ifeq ($(ARCH),x86_64)
@@ -30,10 +28,6 @@ endif
 ifeq ($(ARCH),aarch64)
 	PKG_ARCH_V2RAY:=linux-arm64
 endif
-#PKG_SOURCE:=v2ray-$(PKG_ARCH_V2RAY).zip
-#PKG_SOURCE_URL:=https://github.com/v2ray/v2ray-core/releases/download/$(PKG_VERSION)
-#PKG_SOURCE_SUBDIR:=v2ray-$(PKG_VERSION)-$(V2RAY_PKG_ARCH)
-#PKG_CAT:=unzip
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -66,12 +60,12 @@ config PACKAGE_V2RAY_INCLUDE_V2CTL
 config PACKAGE_V2RAY_INCLUDE_GEOIP
 	bool "Include geoip.dat"
 	depends on PACKAGE_V2RAY_INCLUDE_V2CTL
-	default n
+	default y
 
 config PACKAGE_V2RAY_INCLUDE_GEOSITE
 	bool "Include geosite.dat"
 	depends on PACKAGE_V2RAY_INCLUDE_V2CTL
-	default n
+	default y
 
 endmenu
 endef

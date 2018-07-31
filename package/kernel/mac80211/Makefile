@@ -34,7 +34,7 @@ PKG_DRIVERS = \
 	libertas-sdio libertas-usb libertas-spi \
 	mac80211-hwsim \
 	mt7601u \
-	mwl8k mwifiex-pcie mwifiex-sdio \
+	mwl8k mwifiex-pcie mwifiex-usb mwifiex-sdio \
 	p54-common p54-pci p54-spi p54-usb \
 	rsi91x rsi91x-usb rsi91x-sdio\
 	rt2x00-lib rt2x00-pci rt2x00-usb \
@@ -1123,6 +1123,21 @@ define KernelPackage/mwifiex-pcie/description
  Kernel modules for Marvell 802.11n/802.11ac PCIe Wireless cards
 endef
 
+define KernelPackage/mwifiex-usb
+  $(call KernelPackage/mac80211/Default)
+  TITLE:=Driver for Marvell 802.11n USB Wireless cards
+  URL:=https://wireless.wiki.kernel.org/en/users/drivers/mwifiex
+  DEPENDS+= @USB_SUPPORT +kmod-usb-core +kmod-mac80211 +@DRIVER_11N_SUPPORT 
+  FILES:= \
+	$(PKG_BUILD_DIR)/drivers/net/wireless/marvell/mwifiex/mwifiex.ko \
+	$(PKG_BUILD_DIR)/drivers/net/wireless/marvell/mwifiex/mwifiex_usb.ko
+  AUTOLOAD:=$(call AutoProbe,mwifiex_usb)
+endef
+
+define KernelPackage/mwifiex-usb/description
+ Kernel modules for Marvell 802.11n USB Wireless cards
+endef
+
 define KernelPackage/mwifiex-sdio
   $(call KernelPackage/mac80211/Default)
   TITLE:=Driver for Marvell 802.11n/802.11ac SDIO Wireless cards
@@ -1717,6 +1732,7 @@ config-$(call config_package,libertas-usb) += LIBERTAS LIBERTAS_USB
 config-$(call config_package,libertas-spi) += LIBERTAS LIBERTAS_SPI
 config-$(call config_package,mwl8k) += MWL8K
 config-$(call config_package,mwifiex-pcie) += MWIFIEX MWIFIEX_PCIE
+config-$(call config_package,mwifiex-usb) += MWIFIEX MWIFIEX_USB
 config-$(call config_package,mwifiex-sdio) += MWIFIEX MWIFIEX_SDIO
 config-$(call config_package,rtl8180) += RTL8180
 config-$(call config_package,rtl8187) += RTL8187
@@ -1920,6 +1936,7 @@ $(eval $(call KernelPackage,mac80211-hwsim))
 $(eval $(call KernelPackage,mt7601u))
 $(eval $(call KernelPackage,mwl8k))
 $(eval $(call KernelPackage,mwifiex-pcie))
+$(eval $(call KernelPackage,mwifiex-usb))
 $(eval $(call KernelPackage,mwifiex-sdio))
 $(eval $(call KernelPackage,p54-common))
 $(eval $(call KernelPackage,p54-pci))
