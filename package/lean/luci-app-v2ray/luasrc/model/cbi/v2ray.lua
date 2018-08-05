@@ -85,7 +85,7 @@ safe_dns_tcp.rmempty = false
 
 s:tab("main",  translate("Server Setting"))
 
-use_conf_file = s:taboption("main",Flag, "use_conf_file", translate("Use Config File"))
+use_conf_file = s:taboption("main",Flag, "use_conf_file", translate("Use Config File"), translate("Use Config File").."<br>使用教程请<a href='https://github.com/505575853/luci-app-v2ray/blob/master/README.md'>点击这里</a><br><br>")
 use_conf_file.rmempty = false
 
 if nixio.fs.access("/usr/bin/v2ray/v2ctl") then
