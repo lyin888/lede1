@@ -276,6 +276,7 @@ start_pdnsd()
 	
 	uci set dnsforwarder.@arguments[0].enabled=1
 	uci set dnsforwarder.@arguments[0].redir=0
+	uci set dnsforwarder.@arguments[0].dnsmasq=0
 	
 	uci commit dnsforwarder
 	
@@ -336,6 +337,7 @@ stop_pdnsd()
 	killall -q -9 dnsforwarder
 	uci set dnsforwarder.@arguments[0].enabled=0
 	uci set dnsforwarder.@arguments[0].redir=0
+	uci set dnsforwarder.@arguments[0].dnsmasq=0
 	uci commit dnsforwarder
 
 	[ -f  "/etc/dnsforwarder/dnsforwarder.conf.bak" ] && cp /etc/dnsforwarder/dnsforwarder.conf.bak /etc/dnsforwarder/dnsforwarder.conf

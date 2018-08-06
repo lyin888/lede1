@@ -121,12 +121,12 @@ EOF
 }
 EOF
 			sleep 1
-			/usr/bin/ssr-redir -c $SSR_CONF -u -b0.0.0.0 -l$SS_REDIR_PORT -s$vt_server_addr -p$vt_server_port \
+			/usr/bin/ss-redir -c $SSR_CONF -u -b0.0.0.0 -l$SS_REDIR_PORT -s$vt_server_addr -p$vt_server_port \
 			-k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_REDIR_PIDFILE || return 1
 			
 			[ $enable_local = 1 ] && [ "$ssr_local_port" -gt "1" ] && {
 				echo ssrr-local enabled!
-				/usr/bin/ssr-local -u -b0.0.0.0 -l$ssr_local_port -s$vt_server_addr -p$vt_server_port \
+				/usr/bin/ss-local -u -b0.0.0.0 -l$ssr_local_port -s$vt_server_addr -p$vt_server_port \
 					-k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_LOCAL_PIDFILE || return 1
 			}
 			;;
@@ -345,28 +345,73 @@ EOF
 			start_dnsforwarder "$vt_safe_dns" "$vt_dns_mode"
 			;;
 		tunnel_gfwlist) #废弃
-			/usr/bin/ssr-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port			
-			awk -vs="127.0.0.1#$SS_TUNNEL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
-				/etc/gfwlist/$vt_gfwlist > /var/etc/dnsmasq-go.d/01-pollution.conf
+		case "$tool" in
+			ShadowsocksR)
+				/usr/bin/ssr-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port			
+				awk -vs="127.0.0.1#$SS_TUNNEL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/$vt_gfwlist > /var/etc/dnsmasq-go.d/01-pollution.conf
 			
-			awk -vs="127.0.0.1#$PDNSD_LOCAL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
-				/etc/gfwlist/userlist >> /var/etc/dnsmasq-go.d/01-pollution.conf
+				awk -vs="127.0.0.1#$PDNSD_LOCAL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/userlist >> /var/etc/dnsmasq-go.d/01-pollution.conf
 
-			uci set dhcp.@dnsmasq[0].resolvfile=/tmp/resolv.conf.auto
-			uci delete dhcp.@dnsmasq[0].noresolv
-			uci commit dhcp
-			;;
+				uci set dhcp.@dnsmasq[0].resolvfile=/tmp/resolv.conf.auto
+				uci delete dhcp.@dnsmasq[0].noresolv
+				uci commit dhcp
+				;;
+			Shadowsocks)
+				/usr/bin/ss-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port			
+				awk -vs="127.0.0.1#$SS_TUNNEL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/$vt_gfwlist > /var/etc/dnsmasq-go.d/01-pollution.conf
+			
+				awk -vs="127.0.0.1#$PDNSD_LOCAL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/userlist >> /var/etc/dnsmasq-go.d/01-pollution.conf
 
+				uci set dhcp.@dnsmasq[0].resolvfile=/tmp/resolv.conf.auto
+				uci delete dhcp.@dnsmasq[0].noresolv
+				uci commit dhcp
+				;;
+			Redsocks2)
+				/usr/bin/ssr-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port			
+				awk -vs="127.0.0.1#$SS_TUNNEL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/$vt_gfwlist > /var/etc/dnsmasq-go.d/01-pollution.conf
+			
+				awk -vs="127.0.0.1#$PDNSD_LOCAL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
+					/etc/gfwlist/userlist >> /var/etc/dnsmasq-go.d/01-pollution.conf
+
+				uci set dhcp.@dnsmasq[0].resolvfile=/tmp/resolv.conf.auto
+				uci delete dhcp.@dnsmasq[0].noresolv
+				uci commit dhcp
+				;;
+		esac
+		;;
 		safe_only) #直接全部发到用户指定安全DNS
 			iptables -t nat -A ssrr_pre --dport 53 -j DNAT --to-destination $vt_safe_dns:$vt_safe_dns_port
 			;;
 		tunnel_all) #废弃
+		case "$tool" in
+			ShadowsocksR)
 			/usr/bin/ssr-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port
 			echo server=127.0.0.1#$SS_TUNNEL_PORT > /var/etc/dnsmasq-go.d/01-pollution.conf
 			uci delete dhcp.@dnsmasq[0].resolvfile
 			uci set dhcp.@dnsmasq[0].noresolv=1
 			uci commit dhcp
 			;;
+			Shadowsocks)
+			/usr/bin/ss-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port
+			echo server=127.0.0.1#$SS_TUNNEL_PORT > /var/etc/dnsmasq-go.d/01-pollution.conf
+			uci delete dhcp.@dnsmasq[0].resolvfile
+			uci set dhcp.@dnsmasq[0].noresolv=1
+			uci commit dhcp
+			;;
+			Redsocks2)
+			/usr/bin/ssr-tunnel -c $SSR_CONF -u -b0.0.0.0 -l$SS_TUNNEL_PORT -s$vt_server_addr -p$vt_server_port -k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_TUNNEL_PIDFILE -L $vt_safe_dns:$vt_safe_dns_port
+			echo server=127.0.0.1#$SS_TUNNEL_PORT > /var/etc/dnsmasq-go.d/01-pollution.conf
+			uci delete dhcp.@dnsmasq[0].resolvfile
+			uci set dhcp.@dnsmasq[0].noresolv=1
+			uci commit dhcp
+			;;
+		esac
+		;;
 	esac
 
 	local ipcount=`ipset list $vt_np_ipset | wc -l`
@@ -482,7 +527,7 @@ start_dnsforwarder()
 	echo safe dns = $safe_dns dns mode is $dns_mode
 	local white=`uci get ssrr.@shadowsocksr[0].white 2>/dev/null`
 
-	local tcp_dns_list="8.8.4.4,1.0.0.1,1.1.1.1,9.9.9.9,8.8.8.8,208.67.220.220,208.67.222.222" #alex:给pdnsd使用的可靠的国外dns服务器
+	local tcp_dns_list="1.0.0.1,1.1.1.1,4.2.2.1,4.2.2.2,8.8.4.4,8.8.8.8,9.9.9.9,208.67.222.222,208.67.220.220,1.0.0.1:443,1.1.1.1:443,1.0.0.1:853,1.1.1.1:853,208.67.222.222:443,208.67.220.220:443,208.67.222.222:5353,208.67.220.220:5353,2001:4860:4860::8844,2001:4860:4860::8888,2606:4700:4700::1111,2606:4700:4700::1001" #alex:给pdnsd使用的可靠的国外dns服务器
 	
 	case "$dns_mode" in
 		tcp_gfwlist)
@@ -543,6 +588,7 @@ stop_dnsforwarder()
 	fi
 	
 	uci set dnsforwarder.@arguments[0].enabled=0
+	uci set dnsforwarder.@arguments[0].dnsmasq=0
 	uci commit dnsforwarder
 	/etc/init.d/dnsforwarder restart
 	[ -f  "/etc/dnsforwarder/dnsforwarder.conf.bak" ] && cp /etc/dnsforwarder/dnsforwarder.conf.bak /etc/dnsforwarder/dnsforwarder.conf
