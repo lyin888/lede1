@@ -116,7 +116,7 @@ msgid "Domain Lists Settings"
 msgstr "黑/白名单配置"
 
 msgid "ShadowsocksR"
-msgstr "影梭SSR"
+msgstr "影梭四合一"
 
 msgid "General"
 msgstr "代理设置"
