@@ -9,10 +9,18 @@ SS_REDIR_PORT=7070
 SS_TUNNEL_PORT=7071
 SS_LOCAL_PORT=7072
 SS_REDIR_PIDFILE=/var/run/ssrr-redir-go.pid 
+V2RAY_PIDFILE=/var/run/ssrr-v2ray-go.pid
+BROOK_PIDFILE=/var/run/ssrr-brook-go.pid 
 SS_TUNNEL_PIDFILE=/var/run/ssrr-tunnel-go.pid 
 SS_LOCAL_PIDFILE=/var/run/ssrr-local-go.pid
 PDNSD_LOCAL_PORT=5053 #alex:防止和单独的pdnsd服务冲突
 SSR_CONF=/etc/ssrr/shadowsocksr.json
+V2RAY_CONF=/etc/v2ray/config.json
+V2_CONF_GENERATE_LUA=/etc/v2ray/gen_config.lua
+CONFIG=v2ray
+CONFIG1=brook
+CRON_FILE=/etc/crontabs/root
+V2RAY_EXEC_PATH=/usr/bin/v2ray/v2ray
 dnsforwarder_pid=/var/run/dnsforwarder/dns.pid
 vt_gfwlist=china-banned
 vt_np_ipset="chinaip"  # Must be global variable
@@ -46,6 +54,8 @@ start()
 	# $covered_subnets, $local_addresses are not required
 	local covered_subnets=`uci get ssrr.@shadowsocksr[0].covered_subnets 2>/dev/null`
 	local local_addresses=`uci get ssrr.@shadowsocksr[0].local_addresses 2>/dev/null`
+	local conf_file_path=`uci get ssrr.@shadowsocksr[0].conf_file_path 2>/dev/null`
+	local conf_file_type=`uci get ssrr.@shadowsocksr[0].conf_file_type 2>/dev/null`
 
 	
 
@@ -130,6 +140,24 @@ EOF
 					-k"$vt_password" -m$vt_method -t$vt_timeout -f $SS_LOCAL_PIDFILE || return 1
 			}
 			;;
+		v2ray)
+			if [ "$use_conf_file" = 0 ]; then
+				/usr/bin/lua $V2_CONF_GENERATE_LUA $CONFIG $V2RAY_CONF
+				$V2RAY_EXEC_PATH -config=$V2RAY_CONF &
+		else
+			$V2RAY_EXEC_PATH -config=$conf_file_path -format=$conf_file_type &
+		fi
+
+		sleep 3
+		if pidof v2ray>/dev/null; then
+			echo "V2Ray started"
+		else
+			return 1
+		fi
+			;;
+		v2ray)
+		/usr/bin/brook tproxy -l 127.0.0.1:1080 -s $vt_server_addr:$vt_server_port -p $vt_password &>/dev/null &
+			;;
 		Redsocks2)
 			cat > $SSR_CONF <<EOF
 base {
@@ -205,15 +233,24 @@ EOF
 	}
 
 	iptables -t nat -A ssrr_pre -m set --match-set $vt_local_ipset dst -j RETURN || { #应对没有安装ipset的用户
+		iptables -t nat -A ssrr_pre -d 0.0.0.0/8 -j RETURN
 		iptables -t nat -A ssrr_pre -d 10.0.0.0/8 -j RETURN
 		iptables -t nat -A ssrr_pre -d 127.0.0.0/8 -j RETURN
+		iptables -t nat -A ssrr_pre -d 169.254.0.0/16 -j RETURN
 		iptables -t nat -A ssrr_pre -d 172.16.0.0/12 -j RETURN
 		iptables -t nat -A ssrr_pre -d 192.168.0.0/16 -j RETURN
 		iptables -t nat -A ssrr_pre -d 127.0.0.0/8 -j RETURN
 		iptables -t nat -A ssrr_pre -d 224.0.0.0/3 -j RETURN
+		iptables -t nat -A ssrr_pre -d 240.0.0.0/4 -j RETURN
 	}
 	
-
+	if [ "$tool" != "v2ray" ]; then
+	iptables -t nat -A ssrr_pre -d $vt_server_addr -j RETURN
+	fi
+	if [ "$tool" != "Brook" ]; then
+	iptables -t nat -A ssrr_pre -d $vt_server_addr -j RETURN
+	fi
+	
 	iptables -t mangle -A SSRUDP -m set --match-set $vt_local_ipset dst -j RETURN || { #应对没有安装ipset的用户
 		iptables -t mangle -A SSRUDP -d 10.0.0.0/8 -j RETURN
 		iptables -t mangle -A SSRUDP  -d 127.0.0.0/8 -j RETURN
@@ -222,6 +259,38 @@ EOF
 		iptables -t mangle -A SSRUDP  -d 127.0.0.0/8 -j RETURN
 		iptables -t mangle -A SSRUDP  -d 224.0.0.0/3 -j RETURN
 	}
+	
+	if [ "$tool" != "v2ray" ]; then
+	iptables -N gameboost -t mangle
+	ipset -! create gameuser hash:ip maxelem 65536 2>/dev/null
+	/usr/bin/ip rule add fwmark 0x01/0x01 table 100
+	/usr/bin/ip route add local 0.0.0.0/0 dev lo table 100
+	iptables -t mangle -A gameboost -p udp -m set --match-set local dst -j RETURN
+	iptables -t mangle -A gameboost -p udp -m set --match-set china dst -j RETURN
+	iptables -t mangle -A gameboost -p udp --dport 53 -j RETURN
+	iptables -t mangle -A gameboost -p udp -j TPROXY --on-port 7070 --tproxy-mark 0x01/0x01
+	iptables -t mangle -A PREROUTING -m set --match-set gameuser src -j gameboost
+	fi
+	if [ "$tool" != "Brook" ]; then
+	iptables -t mangle -A ssrr_pre -j MARK --set-mark 1
+	iptables -t mangle -A ssrr_pre -j ACCEPT
+	
+	iptables -t mangle -A PREROUTING -p tcp -m socket -j ssrr_pre
+	iptables -t mangle -A PREROUTING -p tcp -j TPROXY --tproxy-mark 0x1/0x1 --on-port 7070
+
+	iptables -t mangle -A PREROUTING -p udp -m socket -j ssrr_pre
+	iptables -t mangle -A PREROUTING -p udp -j TPROXY --tproxy-mark 0x1/0x1 --on-port 7070
+	
+	iptables -N gameboost -t mangle
+	ipset -! create gameuser hash:ip maxelem 65536 2>/dev/null
+	/usr/bin/ip rule add fwmark 0x01/0x01 table 100
+	/usr/bin/ip route add local 0.0.0.0/0 dev lo table 100
+	iptables -t mangle -A gameboost -p udp -m set --match-set local dst -j RETURN
+	iptables -t mangle -A gameboost -p udp -m set --match-set china dst -j RETURN
+	iptables -t mangle -A gameboost -p udp --dport 53 -j RETURN
+	iptables -t mangle -A gameboost -p udp -j TPROXY --on-port 7070 --tproxy-mark 0x01/0x01
+	iptables -t mangle -A PREROUTING -m set --match-set gameuser src -j gameboost 
+	fi
 	
 	if [ "$white" = 1 ]; then #强制不代理域名
 		ipset create $WHITE_SET hash:net family inet hashsize 1024 maxelem 65536 2>/dev/null
@@ -457,6 +526,16 @@ stop()
 		kill -9 `cat $SS_LOCAL_PIDFILE`
 		rm -f $SS_LOCAL_PIDFILE
 	fi
+	if [ -f $V2RAY_PIDFILE ]; then
+		kill -9 `cat $V2RAY_PIDFILE`
+		rm -f $V2RAY_PIDFILE
+	fi
+	killall -9 v2ray 2>/dev/null
+	if [ -f $BROOK_PIDFILE ]; then
+		kill -9 `cat $BROOK_PIDFILE`
+		rm -f $BROOK_PIDFILE
+	fi
+	killall -9 brook 2>/dev/null
 }
 
 keep_chinaip=0

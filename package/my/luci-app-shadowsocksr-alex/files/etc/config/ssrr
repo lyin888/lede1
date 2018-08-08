@@ -9,4 +9,5 @@ config shadowsocksr
 	option method 'rc4-md5'
 	option protocol 'origin'
 	option obfs 'plain'
-
+	option safe_dns '8.8.8.8'
+	option safe_dns_port '53'
