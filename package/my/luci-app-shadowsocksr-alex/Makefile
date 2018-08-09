@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-shadowsocksr-alex
-PKG_VERSION=1.8.0
+PKG_VERSION=1.7.3
 PKG_RELEASE:=1
 PKG_MAINTAINER:=Alex Zhuo <1886090@gmail.com>
 
@@ -15,7 +15,7 @@ define Package/$(PKG_NAME)
 	SUBMENU:=3. Applications
 	PKGARCH:=all
 	TITLE:=luci for shadowsocksR
-	DEPENDS:=+shadowsocksr-libev +shadowsocks-libev-ss-redir +shadowsocks-libev-ss-tunnel +shadowsocks-libev-ss-local +v2ray +brook +dnsforwarder +ipset +ip +iptables-mod-tproxy +kmod-ipt-tproxy +iptables-mod-nat-extra +coreutils-nohup
+	DEPENDS:=+shadowsocksr-libev +shadowsocks-libev-ss-redir +shadowsocks-libev-ss-tunnel +shadowsocks-libev-ss-local +dnsforwarder +ipset +ip +iptables-mod-tproxy +kmod-ipt-tproxy +iptables-mod-nat-extra +coreutils-nohup
 endef
 
 define Package/$(PKG_NAME)/description
