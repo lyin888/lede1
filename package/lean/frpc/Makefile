@@ -7,8 +7,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=frpc
-PKG_VERSION:=0.20.0
-PKG_RELEASE:=20180601
+PKG_VERSION:=0.21.0
+PKG_RELEASE:=20180812
 
 include $(INCLUDE_DIR)/package.mk
 
