@@ -2,7 +2,9 @@
 	netbios name = |NAME| 
 	interfaces = |INTERFACES|
 	server string = |DESCRIPTION|
-	unix charset = |CHARSET|
+	unix charset = utf-8
+	dos charset = cp936
+	display charset = cp936
 	workgroup = |WORKGROUP|
 
 	## This global parameter allows the Samba admin to limit what interfaces on a machine will serve SMB requests.
@@ -25,7 +27,7 @@
 	#smb encrypt = default
 	
 	## set invalid users
-	invalid users = root
+	#invalid users = root
 	
 	## map unknow users to guest
 	map to guest = Bad User

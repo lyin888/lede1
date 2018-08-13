@@ -16,10 +16,6 @@ define Build/elecom-header
 		-f $@ -C $(KDIR) v_0.0.0.bin v_0.0.0.md5
 endef
 
-define Build/zyimage
-	$(STAGING_DIR_HOST)/bin/zyimage $(1) $@
-endef
-
 define Device/ai-br100
   DTS := AI-BR100
   IMAGE_SIZE := 7936k
@@ -284,6 +280,13 @@ define Device/hc5861
 endef
 TARGET_DEVICES += hc5861
 
+define Device/kimax_u35wf
+  DTS := U35WF
+  IMAGE_SIZE := 16064k
+  DEVICE_TITLE := Kimax U35WF
+endef
+TARGET_DEVICES += kimax_u35wf
+
 define Device/kng_rc
   DTS := kng_rc
   IMAGE_SIZE := $(ralink_default_fw_size_16M)
@@ -431,6 +434,14 @@ define Device/psg1218b
 endef
 TARGET_DEVICES += psg1218b
 
+define Device/phicomm_k2g
+  DTS := K2G
+  IMAGE_SIZE := 7552k
+  DEVICE_TITLE := Phicomm K2G
+  DEVICE_PACKAGES := kmod-mt76x2
+endef
+TARGET_DEVICES += phicomm_k2g
+
 define Device/rp-n53
   DTS := RP-N53
   DEVICE_TITLE := Asus RP-N53
@@ -463,6 +474,30 @@ define Device/tiny-ac
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci
 endef
 TARGET_DEVICES += tiny-ac
+
+define Device/br-6478ac-v2
+  DTS := BR-6478AC-V2
+  DEVICE_TITLE := Edimax BR-6478AC V2
+  BLOCKSIZE := 64k
+  IMAGE_SIZE := 7616k
+  IMAGE/sysupgrade.bin := append-kernel | append-rootfs | \
+	edimax-header -s CSYS -m RN68 -f 0x70000 -S 0x01100000 | pad-rootfs | \
+	append-metadata | check-size $$$$(IMAGE_SIZE)
+  DEVICE_PACKAGES := kmod-mt76
+endef
+TARGET_DEVICES += br-6478ac-v2
+
+define Device/tplink_c2-v1
+  $(Device/Archer)
+  DTS := ArcherC2-v1
+  TPLINK_FLASHLAYOUT := 8Mmtk
+  TPLINK_HWID := 0xc7500001
+  TPLINK_HWREV := 50
+  IMAGES += factory.bin
+  DEVICE_TITLE := TP-Link Archer C2 v1
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-ledtrig-usbport kmod-switch-rtl8366-smi kmod-switch-rtl8367b
+endef
+TARGET_DEVICES += tplink_c2-v1
 
 define Device/tplink_c20-v1
   $(Device/Archer)
