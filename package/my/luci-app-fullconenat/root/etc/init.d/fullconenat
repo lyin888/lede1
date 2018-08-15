@@ -12,21 +12,24 @@ start(){
 	fullconenat_ip=$(uci get fullconenat.config.fullconenat_ip 2>/dev/null)
 	if [ $enable -eq 1 ]; then
 		if [ $all_enable -eq 0 ]; then
-		sed -i '/FULLCONENAT/d' /etc/firewall.user
-		echo "iptables -t nat -A zone_wan_prerouting -j FULLCONENAT" >> /etc/firewall.user
-		echo "iptables -t nat -A zone_wan_postrouting -s $fullconenat_ip -j FULLCONENAT" >> /etc/firewall.user
-		echo "iptables -t nat -A zone_wan_postrouting -j MASQUERADE" >> /etc/firewall.user
+			sed -i '/FULLCONENAT/d' /etc/firewall.user
+			echo "iptables -t nat -A zone_wan_prerouting -j FULLCONENAT" >> /etc/firewall.user
+			echo "iptables -t nat -A zone_wan_postrouting -s $fullconenat_ip -j FULLCONENAT" >> /etc/firewall.user
+			echo "iptables -t nat -A zone_wan_postrouting -j MASQUERADE" >> /etc/firewall.user
 		elif [ $all_enable -eq 1 ]; then
-		sed -i '/FULLCONENAT/d' /etc/firewall.user
-		echo "iptables -t nat -A zone_wan_prerouting -j FULLCONENAT" >> /etc/firewall.user
-		echo "iptables -t nat -A zone_wan_postrouting -j FULLCONENAT" >> /etc/firewall.user
+			iptables -t nat -D zone_wan_postrouting -s $fullconenat_ip -j FULLCONENAT
+			iptables -t nat -D zone_wan_postrouting -j MASQUERADE
+			sed -i '/zone_wan_postrouting -j MASQUERADE/d' /etc/firewall.user
+			sed -i '/FULLCONENAT/d' /etc/firewall.user
+			echo "iptables -t nat -A zone_wan_prerouting -j FULLCONENAT" >> /etc/firewall.user
+			echo "iptables -t nat -A zone_wan_postrouting -j FULLCONENAT" >> /etc/firewall.user
 		fi
 		uci set firewall.@zone[1].masq=0
 		uci commit firewall
-        if [ $re -eq 0 ]; then
-	echo $re
-        /etc/init.d/firewall restart
-        fi 
+			if [ $re -eq 0 ]; then
+				echo $re
+				/etc/init.d/firewall restart
+			fi 
 	fi
 }
 
@@ -35,18 +38,18 @@ stop(){
 	fullconenat_ip=$(uci get fullconenat.config.fullconenat_ip 2>/dev/null)
     enable=$(uci get fullconenat.config.enabled 2>/dev/null)	
     if [ $enable -eq 0 ]; then
-	echo "disable"
-	iptables -t nat -D zone_wan_prerouting -j FULLCONENAT
-	iptables -t nat -D zone_wan_postrouting -s $fullconenat_ip -j FULLCONENAT
-	iptables -t nat -D zone_wan_postrouting -j MASQUERADE
-	iptables -t nat -D zone_wan_postrouting -j FULLCONENAT
-	sed -i '/zone_wan_postrouting -j MASQUERADE/d' /etc/firewall.user
-	sed -i '/FULLCONENAT/d' /etc/firewall.user
-	uci set firewall.@zone[1].masq=1
-	uci commit firewall
+		echo "disable"
+		iptables -t nat -D zone_wan_prerouting -j FULLCONENAT
+		iptables -t nat -D zone_wan_postrouting -s $fullconenat_ip -j FULLCONENAT
+		iptables -t nat -D zone_wan_postrouting -j MASQUERADE
+		iptables -t nat -D zone_wan_postrouting -j FULLCONENAT
+		sed -i '/zone_wan_postrouting -j MASQUERADE/d' /etc/firewall.user
+		sed -i '/FULLCONENAT/d' /etc/firewall.user
+		uci set firewall.@zone[1].masq=1
+		uci commit firewall
 	    if [ $re -ne 1 ]; then
-	echo $re
-         /etc/init.d/firewall restart
+			echo $re
+			/etc/init.d/firewall restart
         fi 
 	fi
 }

@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=transmission-web-control
 PKG_VERSION:=1.6.0-alpha
-PKG_REV:=74e0ff5
+PKG_REV:=53b7e07
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git

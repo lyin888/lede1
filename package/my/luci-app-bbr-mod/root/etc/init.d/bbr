@@ -9,15 +9,16 @@ start(){
 	bbr_mod_enable=$(uci get bbr.config.bbr_mod_enabled 2>/dev/null)
 	if [ $enable -eq 1 ]; then
 		if [ $bbr_mod_enable -eq 0 ]; then
-		insmod bbr
-		echo "bbr" > /etc/modules.d/bbr
-		sed -i '/bbr/d' /etc/sysctl.conf
-		echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+			insmod bbr
+			echo "bbr" > /etc/modules.d/bbr
+			sed -i '/bbr/d' /etc/sysctl.conf
+			echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 		elif [ $bbr_mod_enable -eq 1 ]; then
-		insmod tcp_bbr_mod
-		echo "tcp_bbr_mod" > /etc/modules.d/bbr
-		sed -i '/bbr/d' /etc/firewall.user
-		echo "net.ipv4.tcp_congestion_control=tcp_bbr_mod" >> /etc/sysctl.conf
+			rmmod bbr
+			insmod tcp_bbr_mod
+			echo "tcp_bbr_mod" > /etc/modules.d/bbr
+			sed -i '/bbr/d' /etc/firewall.user
+			echo "net.ipv4.tcp_congestion_control=tcp_bbr_mod" >> /etc/sysctl.conf
 		fi
 		sysctl -p
 	fi
@@ -27,13 +28,13 @@ stop(){
 	echo "stop"
     enable=$(uci get bbr.config.enabled 2>/dev/null)	
     if [ $enable -ne 1 ]; then
-	echo "disable"
-	rmmod bbr
-	rmmod tcp_bbr_mod
-	echo "net.ipv4.tcp_congestion_control=cubic" >> /etc/sysctl.conf
-	sed -i '/bbr/d' /etc/sysctl.conf
-	sysctl -p
-	sed -i '/cubic/d' /etc/sysctl.conf
-	sysctl -p
+		echo "disable"
+		rmmod bbr
+		rmmod tcp_bbr_mod
+		echo "net.ipv4.tcp_congestion_control=cubic" >> /etc/sysctl.conf
+		sed -i '/bbr/d' /etc/sysctl.conf
+		sysctl -p
+		sed -i '/cubic/d' /etc/sysctl.conf
+		sysctl -p
 	fi
 }
