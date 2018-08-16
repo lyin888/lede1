@@ -1425,7 +1425,6 @@ static void fast_classifier_sync_rule(struct sfe_connection_sync *sis)
 			nlstats.rx_packets = sis->src_new_packet_count;
 			nlstats.rx_bytes = sis->src_new_byte_count;
 			spin_lock_bh(&sfe_connections_lock);
-			br_dev_update_stats(sis->src_dev, &nlstats);
 			spin_unlock_bh(&sfe_connections_lock);
 		}
 		if (sis->dest_dev && IFF_EBRIDGE &&
@@ -1433,7 +1432,6 @@ static void fast_classifier_sync_rule(struct sfe_connection_sync *sis)
 			nlstats.rx_packets = sis->dest_new_packet_count;
 			nlstats.rx_bytes = sis->dest_new_byte_count;
 			spin_lock_bh(&sfe_connections_lock);
-			br_dev_update_stats(sis->dest_dev, &nlstats);
 			spin_unlock_bh(&sfe_connections_lock);
 		}
 	}
