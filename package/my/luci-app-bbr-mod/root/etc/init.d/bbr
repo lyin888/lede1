@@ -21,6 +21,10 @@ start(){
 			echo "net.ipv4.tcp_congestion_control=tcp_bbr_mod" >> /etc/sysctl.conf
 		fi
 		sysctl -p
+		if [ $re -eq 0 ]; then
+			echo $re
+			sysctl -p
+		fi 
 	fi
 }
 
@@ -36,5 +40,16 @@ stop(){
 		sysctl -p
 		sed -i '/cubic/d' /etc/sysctl.conf
 		sysctl -p
+	    if [ $re -ne 1 ]; then
+			echo $re
+			sysctl -p
+        fi 
 	fi
+}
+
+restart(){
+	re=1
+	stop
+	start
+	sysctl -p
 }
