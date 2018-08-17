@@ -56,7 +56,7 @@ diff --git a/net/core/dev.c b/net/core/dev.c
 index 11b9cda..3761691 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -2732,8 +2732,17 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
+@@ -2929,8 +2929,26 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
  	unsigned int len;
  	int rc;
  
@@ -71,6 +71,15 @@ index 11b9cda..3761691 100644
 +#ifdef CONFIG_SHORTCUT_FE
 +	}
 +#endif
++#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
++	if ((!list_empty(&ptype_all) || !list_empty(&dev->ptype_all)) &&
++		!(skb->imq_flags & IMQ_F_ENQUEUE))
++#else
++  	if (!list_empty(&ptype_all) || !list_empty(&dev->ptype_all))
++#endif
++  		dev_queue_xmit_nit(skb, dev);
++  
++  	len = skb->len;
  
  #ifdef CONFIG_ETHERNET_PACKET_MANGLE
  	if (!dev->eth_mangle_tx ||
