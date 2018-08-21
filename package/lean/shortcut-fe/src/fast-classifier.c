@@ -181,7 +181,7 @@ static atomic_t done_fail_msgs = ATOMIC_INIT(0);
  * 	only implement ingress for now, because for egress we
  * 	want to have the bridge devices qdiscs be used.
  */
-static bool skip_to_bridge_ingress;
+static bool skip_to_bridge_ingress = 1;
 
 /*
  * fast_classifier_incr_exceptions()
@@ -761,7 +761,7 @@ static int fast_classifier_nl_genl_msg_DUMP(struct sk_buff *skb,
 }
 
 /* auto offload connection once we have this many packets*/
-static int offload_at_pkts = 128;
+static int offload_at_pkts = 16;
 
 /*
  * fast_classifier_post_routing()
@@ -1425,6 +1425,7 @@ static void fast_classifier_sync_rule(struct sfe_connection_sync *sis)
 			nlstats.rx_packets = sis->src_new_packet_count;
 			nlstats.rx_bytes = sis->src_new_byte_count;
 			spin_lock_bh(&sfe_connections_lock);
+			br_dev_update_stats(sis->src_dev, &nlstats);
 			spin_unlock_bh(&sfe_connections_lock);
 		}
 		if (sis->dest_dev && IFF_EBRIDGE &&
@@ -1432,6 +1433,7 @@ static void fast_classifier_sync_rule(struct sfe_connection_sync *sis)
 			nlstats.rx_packets = sis->dest_new_packet_count;
 			nlstats.rx_bytes = sis->dest_new_byte_count;
 			spin_lock_bh(&sfe_connections_lock);
+			br_dev_update_stats(sis->dest_dev, &nlstats);
 			spin_unlock_bh(&sfe_connections_lock);
 		}
 	}
@@ -1811,7 +1813,7 @@ static int __init fast_classifier_init(void)
 	}
 #endif
 
-	printk(KERN_ALERT "fast-classifier: registered\n");
+	printk(KERN_ALERT "fast-classifier (PBR safe v2.1b): registered\n");
 
 	spin_lock_init(&sc->lock);
 
@@ -1865,7 +1867,7 @@ static void __exit fast_classifier_exit(void)
 	int result = -1;
 
 	DEBUG_INFO("SFE CM exit\n");
-	printk(KERN_ALERT "fast-classifier: shutting down\n");
+	printk(KERN_ALERT "fast-classifier (PBR safe v2.1b): shutting down\n");
 
 	/*
 	 * Unregister our sync callback.
