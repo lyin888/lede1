@@ -16,8 +16,9 @@ DEVICE_TYPE?=router
 DEFAULT_PACKAGES:=base-files libc libgcc busybox dropbear mtd uci opkg netifd fstools uclient-fetch logd \
 iptables-mod-nat-extra kmod-nf-nathelper kmod-nf-nathelper-extra kmod-ipt-raw kmod-macvlan kmod-nft-offload block-mount automount \
 default-settings ipset-lists luci luci-app-ddns luci-app-sqm luci-app-upnp luci-app-adbyby-plus luci-app-autoreboot \
-luci-app-filetransfer luci-app-ssr-pro luci-app-usb-printer luci-app-vsftpd ddns-scripts_aliyun luci-app-xlnetacc \
-luci-app-pptp-server luci-app-ipsec-vpnd luci-app-vlmcsd luci-app-wifischedule luci-app-wol luci-app-sfe luci-app-flowoffload luci-app-nlbwmon
+luci-app-filetransfer luci-app-shadowsocksr-alex luci-app-usb-printer luci-app-vsftpd ddns-scripts_aliyun luci-app-xlnetacc \
+luci-app-pptp-server luci-app-ipsec-vpnd luci-app-vlmcsd luci-app-wifischedule luci-app-wol luci-app-sfe luci-app-flowoffload luci-app-nlbwmon \
+luci-app-fullconenat luci-app-bbr-mod luci-app-bbr luci-app-access_control luci-app-cpulimit luci-app-eqos odhcp6c odhcp-ipv6only luci-app-syncdial luci-app-mwan3
 # For nas targets
 DEFAULT_PACKAGES.nas:=block-mount fdisk lsblk mdadm
 # For router targets
