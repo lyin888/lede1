@@ -18,7 +18,7 @@ iptables-mod-nat-extra kmod-nf-nathelper kmod-nf-nathelper-extra kmod-ipt-raw km
 default-settings ipset-lists luci luci-app-ddns luci-app-sqm luci-app-upnp luci-app-adbyby-plus luci-app-autoreboot \
 luci-app-filetransfer luci-app-shadowsocksr-alex luci-app-usb-printer luci-app-vsftpd ddns-scripts_aliyun luci-app-xlnetacc \
 luci-app-pptp-server luci-app-ipsec-vpnd luci-app-vlmcsd luci-app-wifischedule luci-app-wol luci-app-sfe luci-app-flowoffload luci-app-nlbwmon \
-luci-app-fullconenat luci-app-bbr-mod luci-app-bbr luci-app-access_control luci-app-cpulimit luci-app-eqos odhcp6c odhcp-ipv6only luci-app-syncdial luci-app-mwan3
+luci-app-fullconenat luci-app-access_control luci-app-cpulimit luci-app-eqos odhcp6c odhcp-ipv6only luci-app-syncdial luci-app-mwan3
 # For nas targets
 DEFAULT_PACKAGES.nas:=block-mount fdisk lsblk mdadm
 # For router targets
