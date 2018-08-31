@@ -81,6 +81,26 @@ safe_dns_tcp.rmempty = false
 --fast_open =s:taboption("basic",Flag, "fast_open", translate("TCP Fast Open"),
 --	translate("Enable TCP fast open, only available on kernel > 3.7.0"))
 
+safe_dns_tcp_udp = s:taboption("basic",ListValue, "safe_dns_tcp_udp", translate("DNS uses TCP UDP"))
+safe_dns_tcp_udp:value("tcp")
+safe_dns_tcp_udp:value("udp")
+
+pdnsd_enable = s:taboption("basic",ListValue, "pdnsd_enable", translate("Resolve Dns Mode"))
+pdnsd_enable:value("Pdnsd")
+pdnsd_enable:value("dnsforwarder")
+
+monitor = s:taboption("basic",Flag, "monitor", translate("monitor"))
+monitor.rmempty = false
+
+bin_dir = s:taboption("basic", Value, "bin_dir", translate("Bin Dir"))
+bin_dir:value("/tmp", translate("/tmp"))
+
+bin_dir.default = "/tmp"
+bin_dir.rmempty = false
+
+version = s:taboption("basic",Value, "version", translate("Version"))
+version.default = "3.37.4"
+version.datatype = "3.37.4"
 
 
 s:tab("main",  translate("Server Setting"))

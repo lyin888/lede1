@@ -50,7 +50,9 @@ start()
   local conf_file_type=`uci get v2ray.@v2ray[0].conf_file_type 2>/dev/null`
   local monitor=`uci get v2ray.@v2ray[0].monitor 2>/dev/null`
   local bin_dir=`uci get v2ray.@v2ray[0].bin_dir 2>/dev/null` 
- 
+  local safe_dns_tcp_udp=`uci get v2ray.@v2ray[0].safe_dns_tcp_udp 2>/dev/null`
+  local pdnsd_enable=`uci get v2ray.@v2ray[0].pdnsd_enable 2>/dev/null`
+  
  	[ "$vt_enabled" = "0" ] && exit
  	mkdir -p $bin_dir/etc
 
@@ -106,7 +108,14 @@ start()
 	###### Anti-pollution configuration ######
 	if [ -n "$vt_safe_dns" ]; then
 		if [ "$vt_safe_dns_tcp" = 1 ]; then
-			start_pdnsd "$vt_safe_dns"
+			case "$pdnsd_enable" in
+				Pdnsd)
+					start_pdnsd "$vt_safe_dns"
+					;;
+				dnsforwarder)
+					start_dnsforwarder "$vt_safe_dns"
+					;;
+			esac
 			awk -vs="127.0.0.1#$PDNSD_LOCAL_PORT" '!/^$/&&!/^#/{printf("server=/%s/%s\n",$0,s)}' \
 				/etc/gfwlist/$vt_gfwlist > /var/dnsmasq.d/01-pollution.conf
 		else
@@ -146,6 +155,7 @@ stop()
 	/etc/init.d/dnsmasq restart
 
 	stop_pdnsd
+	stop_dnsforwarder
 
 	# --STOP IPv4 firewall---------------------------------------------------------------
 	del_rule
@@ -189,11 +199,7 @@ UpdateApp() {
 }
 
 download_binary(){
-	version_g=$(uci get v2ray.v2ray.version_g)
-	version_d=$(uci get v2ray.v2ray.version_d)
-	version_c=$(uci get v2ray.v2ray.version_c)
-	dl_mod=$(uci get v2ray.v2ray.dl_mod)
-	c_url=$(uci get v2ray.v2ray.c_url)
+	version=$(uci get v2ray.v2ray.version)
 	bin_dir=$(uci get v2ray.v2ray.bin_dir)
 
 	echo `date` "开始下载v2ray二进制文件..."
@@ -201,16 +207,7 @@ download_binary(){
 
 	cd $bin_dir/etc 
 
-	if [ $dl_mod = "git" ]; then
-		version="$version_g"
-		down_url=https://github.com/v2ray/v2ray-core/releases/download/v"$version"/v2ray-linux-"$ARCH".zip
-	elif [ $dl_mod = "blog" ]; then
-		version="$version_d"
-		down_url=https://www.myopenwrt.org/wp-content/uploads/2018/04/v2ray-linux-"$ARCH"-v"$version".zip
-	else
-		version="$version_c"
-		down_url="$c_url"/v2ray-linux-"$ARCH".zip
-	fi
+	down_url=https://github.com/v2ray/v2ray-core/releases/download/v"$version"/v2ray-linux-"$ARCH".zip
 
 	local a=0
 	while [ ! -f $bin_dir/etc/v2ray-linux-"$ARCH"*.zip ]; do
@@ -257,21 +254,131 @@ reload()
   local vt_safe_dns_tcp=`uci get v2ray.@v2ray[0].safe_dns_tcp 2>/dev/null`
   local vt_proxy_mode=`uci get v2ray.@v2ray[0].proxy_mode`
   local vt_gfwlist=`__gfwlist_by_mode $vt_proxy_mode`
+  local pdnsd_enable=`uci get v2ray.@v2ray[0].pdnsd_enable 2>/dev/null`
 	KEEP_GFWLIST=Y
 	del_rule
 	add_rule
 	if [ "$vt_safe_dns_tcp" = 1 ]; then
-    stop_pdnsd
-    start_pdnsd
+		case "$pdnsd_enable" in
+		Pdnsd)
+			stop_pdnsd
+			start_pdnsd
+			;;
+		dnsforwarder)
+		    stop_dnsforwarder
+			start_dnsforwarder
+			;;
+		esac
 	fi
 }
 
 # $1: upstream DNS server
 start_pdnsd()
 {
+	local safe_dns_tcp_udp=`uci get v2ray.@v2ray[0].safe_dns_tcp_udp 2>/dev/null`
 	local safe_dns="$1"
 
-	local tcp_dns_list="1.0.0.1,1.1.1.1,4.2.2.1,4.2.2.2,8.8.4.4,8.8.8.8,9.9.9.9,208.67.222.222,208.67.220.220,1.0.0.1:443,1.1.1.1:443,1.0.0.1:853,1.1.1.1:853,208.67.222.222:443,208.67.220.220:443,208.67.222.222:5353,208.67.220.220:5353,2001:4860:4860::8844,2001:4860:4860::8888,2606:4700:4700::1111,2606:4700:4700::1001"
+	local tcp_dns_list="208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1,8.8.4.4"
+	[ -n "$safe_dns" ] && tcp_dns_list="$safe_dns,$tcp_dns_list"
+
+	#killall -9 pdnsd 2>/dev/null && sleep 1
+	kill -9 $(cat /var/run/pdnsd.pid) >/dev/null 2>&1
+
+	mkdir -p /var/etc /var/pdnsd
+	if ! test -f "/var/pdnsd/pdnsd.cache"; then
+    dd if=/dev/zero of="/var/pdnsd/pdnsd.cache" bs=1 count=4 2> /dev/null
+    chown -R nobody.nogroup /var/pdnsd
+  fi
+
+	case "$safe_dns_tcp_udp" in
+		tcp)
+	cat > /var/etc/pdnsd.conf <<EOF
+global {
+	perm_cache=10240;
+	cache_dir="/var/pdnsd";
+	pid_file = /var/run/pdnsd.pid;
+	run_as="nobody";
+	server_ip = 127.0.0.1;
+	server_port = $PDNSD_LOCAL_PORT;
+	status_ctl = on;
+	query_method = tcp_only;
+	min_ttl=1h;
+	max_ttl=1w;
+	timeout=10;
+	neg_domain_pol=on;
+	proc_limit=2;
+	procq_limit=8;
+}
+server {
+	label= "fwxxx";
+	ip = $tcp_dns_list;
+	port = 53;
+	timeout=6;
+	uptest=none;
+	interval=10m;
+	purge_cache=off;
+}
+EOF
+	;;
+		udp)
+	cat > /var/etc/pdnsd.conf <<EOF
+global {
+	perm_cache=10240;
+	cache_dir="/var/pdnsd";
+	pid_file = /var/run/pdnsd.pid;
+	run_as="nobody";
+	server_ip = 127.0.0.1;
+	server_port = $PDNSD_LOCAL_PORT;
+	status_ctl = on;
+	query_method = udp_only;
+	min_ttl=1h;
+	max_ttl=1w;
+	timeout=10;
+	neg_domain_pol=on;
+	proc_limit=2;
+	procq_limit=8;
+}
+server {
+	label= "fwxxx";
+	ip = $tcp_dns_list;
+	port = 53;
+	timeout=6;
+	uptest=none;
+	interval=10m;
+	purge_cache=off;
+}
+EOF
+		;;
+	esac
+
+	/usr/sbin/pdnsd -c /var/etc/pdnsd.conf -d
+
+	# Access TCP DNS server through V2Ray tunnel
+	if iptables -t nat -N pdnsd_output; then
+		iptables -t nat -A pdnsd_output -m set --match-set $vt_np_ipset dst -j RETURN
+		iptables -t nat -A pdnsd_output -p tcp -j REDIRECT --to $SS_REDIR_PORT
+	fi
+	iptables -t nat -I OUTPUT -p tcp --dport 53 -j pdnsd_output
+}
+
+stop_pdnsd()
+{
+	if iptables -t nat -F pdnsd_output 2>/dev/null; then
+		while iptables -t nat -D OUTPUT -p tcp --dport 53 -j pdnsd_output 2>/dev/null; do :; done
+		iptables -t nat -X pdnsd_output
+	fi
+	killall -9 pdnsd 2>/dev/null
+	rm -rf /var/pdnsd
+	rm -f /var/etc/pdnsd.conf
+}
+
+# $1: upstream DNS server
+start_dnsforwarder()
+{
+	local safe_dns_tcp_udp=`uci get v2ray.@v2ray[0].safe_dns_tcp_udp 2>/dev/null`
+	local safe_dns="$1"
+
+	local tcp_dns_list="1.0.0.1,1.1.1.1,4.2.2.1,4.2.2.2,8.8.4.4,8.8.8.8,9.9.9.9,208.67.222.222,208.67.220.220,1.0.0.1:443,1.1.1.1:443,1.0.0.1:853,1.1.1.1:853,208.67.222.222:443,208.67.220.220:443,208.67.222.222:5353,208.67.220.220:5353"
 	[ -n "$safe_dns" ] && tcp_dns_list="$safe_dns,$tcp_dns_list"
 	
 	uci set dnsforwarder.@arguments[0].enabled=1
@@ -283,6 +390,9 @@ start_pdnsd()
 	[ ! -f "/etc/dnsforwarder/dnsforwarder.conf.bak" ] && {
 		cp /etc/dnsforwarder/dnsforwarder.conf /etc/dnsforwarder/dnsforwarder.conf.bak
 	}
+
+	case "$safe_dns_tcp_udp" in
+		tcp)
 	cat > /etc/dnsforwarder/dnsforwarder.conf <<EOF
 LogOn true
 LogFileThresholdLength 102400
@@ -316,6 +426,43 @@ DomainStatistic false
 DomainStatisticTempletFile
 StatisticUpdateInterval 29
 EOF
+		;;
+		udp)
+	cat > /etc/dnsforwarder/dnsforwarder.conf <<EOF
+LogOn true
+LogFileThresholdLength 102400
+LogFileFolder /var/log
+UDPLocal 0.0.0.0:$PDNSD_LOCAL_PORT
+UDPGroup $tcp_dns_list * on
+GroupFile
+BlockIP 243.185.187.39,46.82.174.68,37.61.54.158,93.46.8.89,59.24.3.173,203.98.7.65,8.7.198.45,78.16.49.15,159.106.121.75,69.63.187.12,31.13.76.8,31.13.64.49
+IPSubstituting
+BlockNegativeResponse false
+Hosts
+HostsUpdateInterval 18000
+HostsDownloadPath
+HostsScript
+HostsRetryInterval 30
+AppendHosts
+BlockIpv6WhenIpv4Exists false
+UseCache true
+CacheSize 1048576
+MemoryCache true
+CacheFile
+IgnoreTTL false
+OverrideTTL -1
+MultipleTTL 1
+ReloadCache false
+OverwriteCache false
+DisabledType
+DisabledDomain
+DisabledList
+DomainStatistic false
+DomainStatisticTempletFile
+StatisticUpdateInterval 29
+EOF
+		;;
+	esac
 
 /etc/init.d/dnsforwarder restart
 
@@ -328,7 +475,7 @@ EOF
 	iptables -t nat -I OUTPUT -p tcp --dport 53 -j pdnsd_output
 }
 
-stop_pdnsd()
+stop_dnsforwarder()
 {
 	if iptables -t nat -F pdnsd_output 2>/dev/null; then
 		while iptables -t nat -D OUTPUT -p tcp --dport 53 -j pdnsd_output 2>/dev/null; do :; done

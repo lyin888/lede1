@@ -346,9 +346,10 @@ s.anonymous = true
 s:tab("wan_ac", translate("Interfaces - WAN"))
 
 o = s:taboption("wan_ac", Value, "wan_bp_list", translate("Bypassed IP List"))
+o:value("/etc/china_ssr.txt", translate("China CHNRoute"))
 o:value("/dev/null", translate("NULL - As Global Proxy"))
 
-o.default = "/dev/null"
+o.default = "/etc/china_ssr.txt"
 o.rmempty = false
 
 o = s:taboption("wan_ac", DynamicList, "wan_bp_ips", translate("Bypassed IP"))
