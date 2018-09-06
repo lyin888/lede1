@@ -89,20 +89,6 @@ pdnsd_enable = s:taboption("basic",ListValue, "pdnsd_enable", translate("Resolve
 pdnsd_enable:value("Pdnsd")
 pdnsd_enable:value("dnsforwarder")
 
-monitor = s:taboption("basic",Flag, "monitor", translate("monitor"))
-monitor.rmempty = false
-
-bin_dir = s:taboption("basic", Value, "bin_dir", translate("Bin Dir"))
-bin_dir:value("/tmp", translate("/tmp"))
-
-bin_dir.default = "/tmp"
-bin_dir.rmempty = false
-
-version = s:taboption("basic",Value, "version", translate("Version"))
-version.default = "3.37.4"
-version.datatype = "3.37.4"
-
-
 s:tab("main",  translate("Server Setting"))
 
 use_conf_file = s:taboption("main",Flag, "use_conf_file", translate("Use Config File"), translate("Use Config File").."<br>使用教程请<a href='https://github.com/505575853/luci-app-v2ray/blob/master/README.md'>点击这里</a><br><br>")
