@@ -11,6 +11,7 @@ start(){
 	if [ $enable -eq 1 ]; then
 		echo "enable"
 		insmod tcp_bbr
+		sleep 3
 		echo "tcp_bbr" > /etc/modules.d/bbr
 		sed -i '/bbr/d' /etc/sysctl.conf
 		echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf

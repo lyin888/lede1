@@ -10,12 +10,14 @@ start(){
 	if [ $enable -eq 1 ]; then
 		if [ $bbr_mod_enable -eq 0 ]; then
 			insmod bbr
+			sleep 3
 			echo "bbr" > /etc/modules.d/bbr
 			sed -i '/bbr/d' /etc/sysctl.conf
 			echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 		elif [ $bbr_mod_enable -eq 1 ]; then
 			rmmod bbr
 			insmod tcp_bbr_mod
+			sleep 3
 			echo "tcp_bbr_mod" > /etc/modules.d/bbr
 			sed -i '/bbr/d' /etc/firewall.user
 			echo "net.ipv4.tcp_congestion_control=tcp_bbr_mod" >> /etc/sysctl.conf
