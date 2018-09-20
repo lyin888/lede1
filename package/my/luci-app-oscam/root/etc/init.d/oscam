@@ -27,3 +27,9 @@ stop() {
 	fi
 }
 
+restart(){
+	stop
+	sleep 2
+	start
+	echo "oscam Server has restarted."
+}
