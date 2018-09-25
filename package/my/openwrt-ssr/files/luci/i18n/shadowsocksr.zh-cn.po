@@ -363,7 +363,7 @@ msgid "Server subscription"
 msgstr "服务器订阅"
 
 msgid "Subscribe URL"
-msgstr "订阅地址"
+msgstr "订阅地址(删除http://)"
 
 msgid "Auto Update"
 msgstr "自动更新"

@@ -3,7 +3,8 @@
 	display charset = |CHARSET|
 	interfaces = |INTERFACES|
 	server string = |DESCRIPTION|
-	unix charset = |CHARSET|
+	unix charset = utf-8
+	dos charset = cp936
 	workgroup = |WORKGROUP|
 	bind interfaces only = yes
 	deadtime = 30
