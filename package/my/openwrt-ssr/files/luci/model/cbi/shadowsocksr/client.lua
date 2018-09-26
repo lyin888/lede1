@@ -220,7 +220,7 @@ o.default = 5300
 end
 
 o = s:option(Value, "tunnel_forward", translate("DNS Server IP and Port"))
-o.default = "208.67.220.220:443"
+o.default = "8.8.4.4:53"
 o.rmempty = false
 
 -- [[ SOCKS5 Proxy ]]--
