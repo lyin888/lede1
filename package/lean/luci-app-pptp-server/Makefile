@@ -10,7 +10,7 @@ LUCI_DEPENDS:=+pptpd +kmod-mppe +ppp
 LUCI_PKGARCH:=all
 PKG_NAME:=luci-app-pptp-server
 PKG_VERSION:=2.0
-PKG_RELEASE:=7
+PKG_RELEASE:=8
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
