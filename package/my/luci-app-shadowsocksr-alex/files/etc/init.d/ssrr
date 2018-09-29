@@ -14,6 +14,7 @@ SS_LOCAL_PIDFILE=/var/run/ssrr-local-go.pid
 PDNSD_LOCAL_PORT=5053 #alex:防止和单独的pdnsd服务冲突
 SSR_CONF=/etc/ssrr/shadowsocksr.json
 dnsforwarder_pid=/var/run/dnsforwarder/dns.pid
+CRON_FILE=/etc/crontabs/root
 vt_gfwlist=china-banned
 vt_np_ipset="chinaip"  # Must be global variable
 vt_local_ipset="localip"
@@ -420,6 +421,10 @@ EOF
 		echo add china ip  $china_file $vt_np_ipset
 		awk '{system("ipset add chinaip "$0)}' $china_file
 	}
+	
+	if [ "$vt_enabled" = 1 ]; then
+	start_cron
+	fi
 
 }
 
@@ -457,6 +462,7 @@ stop()
 		kill -9 `cat $SS_LOCAL_PIDFILE`
 		rm -f $SS_LOCAL_PIDFILE
 	fi
+	stop_cron
 }
 
 keep_chinaip=0
@@ -593,4 +599,16 @@ stop_dnsforwarder()
 	/etc/init.d/dnsforwarder restart
 	[ -f  "/etc/dnsforwarder/dnsforwarder.conf.bak" ] && cp /etc/dnsforwarder/dnsforwarder.conf.bak /etc/dnsforwarder/dnsforwarder.conf
 	rm -f /etc/dnsforwarder/dnsforwarder.conf.bak
+}
+
+start_cron(){
+	sed -i '/shadowsocksr_watchdog.log/d' $CRON_FILE
+	echo '0 */1 * * * /etc/ssrr/ssrr_watchdog >> /tmp/shadowsocksr_watchdog.log 2>&1' >> $CRON_FILE
+	echo '0 1 * * 0 echo "" > /tmp/shadowsocksr_watchdog.log' >> $CRON_FILE
+	crontab $CRON_FILE
+}
+
+stop_cron(){
+	sed -i '/shadowsocksr_watchdog.log/d' $CRON_FILE
+	/etc/init.d/cron restart
 }

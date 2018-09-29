@@ -17,6 +17,7 @@ CONFIG_FILE=/var/etc/${NAME}.json
 CONFIG_UDP_FILE=/var/etc/${NAME}_u.json
 CONFIG_SOCK5_FILE=/var/etc/${NAME}_s.json
 dnsforwarder_pid=/var/run/dnsforwarder/dns.pid
+CRON_FILE=/etc/crontabs/root
 server_count=0
 redir_tcp=0
 redir_udp=0
@@ -421,6 +422,7 @@ start_redir() {
 	if [ "$run_mode" = "gfw" ] ;then
 		if [ "$(uci_get_by_type global pdnsd_enable)" = "0" ] ;then
 			start_tunnel
+			start_cron
 		fi
 
 		if [ "$(uci_get_by_type global pdnsd_enable)" = "1" ] ;then
@@ -430,6 +432,7 @@ start_redir() {
 			ipset add gfwlist $dnsserver 2>/dev/null
 			start_pdnsd $dnsserver $dnsport
 			pdnsd_enable_flag=1
+			start_cron
 		fi
 		
 		if [ "$(uci_get_by_type global pdnsd_enable)" = "2" ] ;then
@@ -439,6 +442,7 @@ start_redir() {
 			ipset add gfwlist $dnsserver 2>/dev/null
 			start_dnsforwarder $dnsserver $dnsport
 			dnsforwarder_enable_flag=1
+			start_cron
 		fi
 	fi
 	
@@ -665,4 +669,17 @@ stop() {
 	[ -f  "/etc/dnsforwarder/dnsforwarder.conf.bak" ] && cp /etc/dnsforwarder/dnsforwarder.conf.bak /etc/dnsforwarder/dnsforwarder.conf
 	rm -f /etc/dnsforwarder/dnsforwarder.conf.bak
 	/etc/init.d/dnsforwarder restart
+	stop_cron
+}
+
+start_cron(){
+	sed -i '/shadowsocksr_watchdog.log/d' $CRON_FILE
+	echo '0 */1 * * * /etc/shadowsocksr/shadowsocksr.watchdog >> /tmp/shadowsocksr_watchdog.log 2>&1' >> $CRON_FILE
+	echo '0 1 * * 0 echo "" > /tmp/shadowsocksr_watchdog.log' >> $CRON_FILE
+	crontab $CRON_FILE
+}
+
+stop_cron(){
+	sed -i '/shadowsocksr_watchdog.log/d' $CRON_FILE
+	/etc/init.d/cron restart
 }

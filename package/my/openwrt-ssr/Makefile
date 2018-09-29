@@ -9,7 +9,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openwrt-ssr
-PKG_VERSION:=3.10.08
+PKG_VERSION:=3.10.10
 # PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -38,7 +38,7 @@ define Package/openwrt-ssr/Default
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
 	TITLE:=shadowsocksR-libev LuCI interface
-	URL:=https://github.com/MrTheUniverse/openwrt-ssr
+	URL:=https://github.com/505575853/openwrt-ssr
 	VARIANT:=$(1)
 	DEPENDS:=$(3)	
 	PKGARCH:=all
@@ -228,7 +228,9 @@ define Package/luci-app-shadowsocksR-GFW/install
 	$(INSTALL_DATA) ./files/ad.conf $(1)/etc/dnsmasq.ssr/ad.conf
 	$(INSTALL_DATA) ./files/ad_list.conf $(1)/etc/dnsmasq.ssr/ad_list.conf
 	$(INSTALL_DIR) $(1)/etc
-	$(INSTALL_DATA) ./files/china_ssr.txt $(1)/etc/china_ssr.txt	
+	$(INSTALL_DATA) ./files/china_ssr.txt $(1)/etc/china_ssr.txt
+	$(INSTALL_DIR) $(1)/etc/shadowsocksr
+	$(INSTALL_BIN) ./files/shadowsocksr.watchdog $(1)/etc/shadowsocksr/shadowsocksr.watchdog
 	$(INSTALL_DIR) $(1)/usr/share/shadowsocksr
 	$(INSTALL_BIN) ./files/root/usr/share/shadowsocksr/*.sh $(1)/usr/share/shadowsocksr/
 endef

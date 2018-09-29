@@ -4,10 +4,10 @@
 START=99
 
 start(){
-	echo "enable"
 	enable=$(uci get bbr.config.enabled 2>/dev/null)
 	bbr_mod_enable=$(uci get bbr.config.bbr_mod_enabled 2>/dev/null)
 	if [ $enable -eq 1 ]; then
+		echo "enable"
 		if [ $bbr_mod_enable -eq 0 ]; then
 			insmod bbr
 			sleep 3
@@ -31,7 +31,6 @@ start(){
 }
 
 stop(){
-	echo "stop"
     enable=$(uci get bbr.config.enabled 2>/dev/null)	
     if [ $enable -ne 1 ]; then
 		echo "disable"

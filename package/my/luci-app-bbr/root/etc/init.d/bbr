@@ -6,7 +6,6 @@ START=98
 re=0
 
 start(){
-	echo "enable"
 	enable=$(uci get bbr.config.enabled 2>/dev/null)
 	if [ $enable -eq 1 ]; then
 		echo "enable"
@@ -25,7 +24,6 @@ start(){
 }
 
 stop(){
-	echo "stop"
     enable=$(uci get bbr.config.enabled 2>/dev/null)	
     if [ $enable -ne 1 ]; then
 	echo "disable"
