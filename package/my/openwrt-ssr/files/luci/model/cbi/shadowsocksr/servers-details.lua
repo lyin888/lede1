@@ -42,6 +42,7 @@ local protocols = {
 	"auth_sha1_v4",
 	"auth_aes128_md5",
 	"auth_aes128_sha1",
+	"auth_akarin",
 	"auth_chain_a",
 	"auth_chain_b",
 	"auth_chain_c",
@@ -72,6 +73,10 @@ end
 s = m:section(NamedSection, sid, "servers")
 s.anonymous = true
 s.addremove = false
+
+o = s:option(ListValue, "tool", translate("Proxy Tool"))
+o:value("ShadowsocksR")
+o:value("Shadowsocks")
 
 o = s:option(Value, "alias", translate("Alias(optional)"))
 o.rmempty = true

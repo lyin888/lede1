@@ -4,7 +4,7 @@ include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI support for BBR Mod
 LUCI_DEPENDS:=@LINUX_4_14 +kmod-bbr +kmod-bbr_mod
-PKG_VERSION:=1.21
+PKG_VERSION:=1.22
 PKG_RELEASE:=1
 
 include $(TOPDIR)/feeds/luci/luci.mk

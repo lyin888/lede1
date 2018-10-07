@@ -4,8 +4,8 @@
 START=99
 
 start(){
-	enable=$(uci get bbr.config.enabled 2>/dev/null)
-	bbr_mod_enable=$(uci get bbr.config.bbr_mod_enabled 2>/dev/null)
+	enable=$(uci get bbr.config.enabled)
+	bbr_mod_enable=$(uci get bbr.config.bbr_mod_enabled)
 	if [ $enable -eq 1 ]; then
 		echo "enable"
 		if [ $bbr_mod_enable -eq 0 ]; then
@@ -31,7 +31,7 @@ start(){
 }
 
 stop(){
-    enable=$(uci get bbr.config.enabled 2>/dev/null)	
+    enable=$(uci get bbr.config.enabled)	
     if [ $enable -ne 1 ]; then
 		echo "disable"
 		rmmod bbr

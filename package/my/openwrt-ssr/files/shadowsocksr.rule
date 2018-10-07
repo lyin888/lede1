@@ -79,12 +79,22 @@ EOF
 	for ip in $WAN_FW_IP; do ipset add gfwlist  $ip ; done
 	$IPT -N SS_SPEC_WAN_AC
 	$IPT -A SS_SPEC_WAN_AC -m set --match-set gfwlist dst -j SS_SPEC_WAN_FW
+	
+	ipset -N fplan iphash 2>/dev/null
+	for ip in $LAN_FP_IP; do ipset add fplan $ip ; done
+	$IPT -I SS_SPEC_WAN_AC -m set --match-set fplan src -j SS_SPEC_WAN_FW
 	fi
 	return $?
 }
 
 fw_rule() {
-	$IPT -N SS_SPEC_WAN_FW && \
+	$IPT -N SS_SPEC_WAN_FW
+	$IPT -A SS_SPEC_WAN_FW -d 10.0.0.0/8 -j RETURN
+	$IPT -A SS_SPEC_WAN_FW -d 127.0.0.0/8 -j RETURN
+	$IPT -A SS_SPEC_WAN_FW -d 172.16.0.0/12 -j RETURN
+	$IPT -A SS_SPEC_WAN_FW -d 192.168.0.0/16 -j RETURN
+	$IPT -A SS_SPEC_WAN_FW -d 127.0.0.0/8 -j RETURN
+	$IPT -A SS_SPEC_WAN_FW -d 224.0.0.0/3 -j RETURN
 	$IPT -A SS_SPEC_WAN_FW -p tcp \
 		-j REDIRECT --to-ports $local_port 2>/dev/null || {
 		loger 3 "Can't redirect, please check the iptables."

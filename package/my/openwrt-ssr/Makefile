@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2017 OpenWrt-ssr
 # Copyright (C) 2017 yushi studio <ywb94@qq.com>
+# Copyright (C) 2018 dz <dingzhong110@gmail.com>
 #
 # This is free software, licensed under the GNU General Public License v3.
 # See /LICENSE for more information.
@@ -9,7 +10,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openwrt-ssr
-PKG_VERSION:=3.10.10
+PKG_VERSION:=3.20.25
 # PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -48,7 +49,7 @@ endef
 Package/luci-app-shadowsocksR = $(call Package/openwrt-ssr/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip-full +iptables-mod-tproxy +libpcre +zlib)
 Package/luci-app-shadowsocksR-Client = $(call Package/openwrt-ssr/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip-full +iptables-mod-tproxy +libpcre +zlib)
 Package/luci-app-shadowsocksR-Server = $(call Package/openwrt-ssr/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip-full +iptables-mod-tproxy +libpcre +zlib)
-Package/luci-app-shadowsocksR-GFW = $(call Package/openwrt-ssr/Default,openssl,(OpenSSL),+libopenssl +libpthread +ipset +ip-full +iptables-mod-tproxy +libpcre +zlib +dnsmasq-full +pdnsd-alt +coreutils +coreutils-base64 +curl +bash +bind-dig)
+Package/luci-app-shadowsocksR-GFW = $(call Package/openwrt-ssr/Default,openssl,(OpenSSL),+shadowsocks-libev +libopenssl +libpthread +ipset +ip-full +iptables-mod-tproxy +libpcre +zlib +dnsmasq-full +pdnsd-alt +coreutils +coreutils-base64 +wget +curl +bash +bind-dig)
 
 define Package/openwrt-ssr/description
 	LuCI Support for $(1).
@@ -229,10 +230,9 @@ define Package/luci-app-shadowsocksR-GFW/install
 	$(INSTALL_DATA) ./files/ad_list.conf $(1)/etc/dnsmasq.ssr/ad_list.conf
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_DATA) ./files/china_ssr.txt $(1)/etc/china_ssr.txt
-	$(INSTALL_DIR) $(1)/etc/shadowsocksr
-	$(INSTALL_BIN) ./files/shadowsocksr.watchdog $(1)/etc/shadowsocksr/shadowsocksr.watchdog
 	$(INSTALL_DIR) $(1)/usr/share/shadowsocksr
 	$(INSTALL_BIN) ./files/root/usr/share/shadowsocksr/*.sh $(1)/usr/share/shadowsocksr/
+	$(INSTALL_BIN) ./files/root/usr/share/shadowsocksr/ssr-watchdog $(1)/usr/share/shadowsocksr/ssr-watchdog
 endef
 
 $(eval $(call BuildPackage,luci-app-shadowsocksR))

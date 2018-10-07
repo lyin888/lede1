@@ -91,7 +91,7 @@ ShadowsocksR-libev for OpenWrt
    make && sudo make install
    popd
    #编译语言文件（可选）
-   po2lmo ./package/my/openwrt-ssr/files/luci/i18n/shadowsocksr.zh-cn.po ./package/my/openwrt-ssr/files/luci/i18n/shadowsocksr.zh-cn.lmo
+   po2lmo ./package/openwrt-ssr/files/luci/i18n/shadowsocksr.zh-cn.po ./package/openwrt-ssr/files/luci/i18n/shadowsocksr.zh-cn.lmo
 
    # 开始编译
     make package/openwrt-ssr/compile V=99
@@ -242,11 +242,11 @@ GFW版本支持IP路由模式和GFW列表模式，需卸载原有的dnsmasq，�
 ---
 客户端：
 
-![luci000](https://github.com/MrTheUniverse/openwrt-ssr/blob/master/Img/client.png)
+![luci000](https://github.com/505575853/openwrt-ssr/blob/master/Img/client.png)
 
 状态页面：
 
-![luci000](https://github.com/MrTheUniverse/openwrt-ssr/blob/master/Img/status.png)
+![luci000](https://github.com/505575853/openwrt-ssr/blob/master/Img/status.png)
 
   [1]: https://github.com/breakwa11/shadowsocks-libev
   [2]: https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Encrypt-method

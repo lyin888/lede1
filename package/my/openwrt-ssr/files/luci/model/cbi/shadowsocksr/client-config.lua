@@ -1,4 +1,5 @@
 -- Copyright (C) 2017 yushi studio <ywb94@qq.com> github.com/ywb94
+-- Copyright (C) 2018 dz <dingzhong110@gmail.com>
 -- Licensed to the public under the GNU General Public License v3.
 
 local m, s, o,kcp_enable
@@ -57,6 +58,7 @@ local protocol = {
 	"auth_sha1_v4",
 	"auth_aes128_sha1",
 	"auth_aes128_md5",
+	"auth_akarin",
 	"auth_chain_a",
 	"auth_chain_b",
 	"auth_chain_c",
@@ -85,6 +87,10 @@ end
 s = m:section(NamedSection, sid, "servers")
 s.anonymous = true
 s.addremove   = false
+
+o = s:option(ListValue, "tool", translate("Proxy Tool"))
+o:value("ShadowsocksR")
+o:value("Shadowsocks")
 
 o = s:option(Value, "alias", translate("Alias(optional)"))
 
@@ -123,14 +129,18 @@ o.rmempty = false
 o = s:option(ListValue, "protocol", translate("Protocol"))
 for _, v in ipairs(protocol) do o:value(v) end
 o.rmempty = false
+o:depends("tool","ShadowsocksR")
 
 o = s:option(Value, "protocol_param", translate("Protocol param(optional)"))
+o:depends("tool","ShadowsocksR")
 
 o = s:option(ListValue, "obfs", translate("Obfs"))
 for _, v in ipairs(obfs) do o:value(v) end
 o.rmempty = false
+o:depends("tool","ShadowsocksR")
 
 o = s:option(Value, "obfs_param", translate("Obfs param(optional)"))
+o:depends("tool","ShadowsocksR")
 
 o = s:option(Flag, "fast_open", translate("TCP Fast Open"))
 o.rmempty = false

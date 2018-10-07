@@ -15,6 +15,10 @@ if nixio.fs.access("/usr/share/shadowsocksr/subscribe.sh") and has_bin("base64")
 	s = m:section(TypedSection, "server_subscribe", translate("Server subscription"))
 	s.anonymous = true
 
+	o = s:option(ListValue, "tool", translate("Proxy Tool"))
+	o:value("ShadowsocksR")
+	o:value("Shadowsocks")
+
 	o = s:option(Flag, "auto_update", translate("Auto Update"))
 	o.rmempty = false
 

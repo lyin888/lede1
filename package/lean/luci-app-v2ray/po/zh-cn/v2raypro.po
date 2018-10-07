@@ -114,3 +114,9 @@ msgstr "文件已保存到"
 
 msgid "No specify upload file."
 msgstr "未指定上传文件"
+
+msgid "Redir"
+msgstr "劫持所有DNS请求"
+
+msgid "Redirs"
+msgstr "自动将所有客户端的DNS请求都劫持到安全DNS"

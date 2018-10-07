@@ -1,7 +1,8 @@
 -- Copyright (C) 2017 yushi studio <ywb94@qq.com>
+-- Copyright (C) 2018 dz <dingzhong110@gmail.com>
 -- Licensed to the public under the GNU General Public License v3.
 
-local IPK_Version="3.0.9"
+local IPK_Version="3.2.0"
 local m, s, o
 local redir_run=0
 local reudp_run=0
@@ -9,6 +10,8 @@ local sock5_run=0
 local server_run=0
 local kcptun_run=0
 local tunnel_run=0
+local pdnsd_run=0
+local dnsforwarder_run=0
 local udp2raw_run=0
 local udpspeeder_run=0
 local gfw_count=0
@@ -114,6 +117,14 @@ if luci.sys.call("ps -w | grep ssr-tunnel |grep -v grep >/dev/null") == 0 then
 tunnel_run=1
 end	
 
+if luci.sys.call("ps -w | grep pdnsd |grep -v grep >/dev/null") == 0 then
+pdnsd_run=1
+end	
+
+if luci.sys.call("ps -w | grep dnsforwarder |grep -v grep >/dev/null") == 0 then
+dnsforwarder_run=1
+end	
+
 if luci.sys.call("pidof udp2raw >/dev/null") == 0 then
 udp2raw_run=1
 end
@@ -163,6 +174,22 @@ s.rawhtml  = true
 if tunnel_run == 1 then
 s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
 else
+s.value = translate("Not Running")
+end
+
+s=m:field(DummyValue,"pdnsd_run",translate("Pdnsd"))
+s.rawhtml  = true                                              
+if pdnsd_run == 1 then                             
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else             
+s.value = translate("Not Running")
+end
+
+s=m:field(DummyValue,"dnsforwarder_run",translate("dnsforwarder"))
+s.rawhtml  = true                                              
+if dnsforwarder_run == 1 then                             
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else             
 s.value = translate("Not Running")
 end
 
@@ -219,15 +246,6 @@ s=m:field(DummyValue,"check_port",translate("Check Server Port"))
 s.template = "shadowsocksr/checkport"
 s.value =translate("No Check")
 
-s=m:field(DummyValue,"version",translate("IPK Version")) 
-s.rawhtml  = true
-s.value =IPK_Version
-
-s=m:field(DummyValue,"ipk_project",translate("IPK Project")) 
-s.rawhtml  = true
-s.value =bold_on .. [[<a href="]] .. "https://github.com/ywb94/openwrt-ssr" .. [[" >]]
-	.. "https://github.com/ywb94/openwrt-ssr" .. [[</a>]] .. bold_off
-
 s=m:field(DummyValue,"kcp_version",translate("KcpTun Version")) 
 s.rawhtml  = true
 s.value =kcptun_version
@@ -254,5 +272,17 @@ s=m:field(DummyValue,"udpspeeder_project",translate("UDPspeeder Project"))
 s.rawhtml  = true
 s.value =bold_on .. [[<a href="]] .. "https://github.com/wangyu-/UDPspeeder" .. [[" >]]
 	.. "https://github.com/wangyu-/UDPspeeder" .. [[</a>]] .. bold_off
+
+local conffile = "/var/ssrplus.log"
+
+s=m:field(DummyValue,"log",translate("LOG")) 
+s = m:field(TextValue, "conf")
+s.rmempty = true
+s.rows = 20
+function s.cfgvalue()
+	return fs.readfile(conffile) or ""
+end
+s.readonly="readonly"
+
 	
 return m

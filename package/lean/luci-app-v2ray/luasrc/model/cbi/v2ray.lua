@@ -39,6 +39,10 @@ proxy_mode:value("S", translate("Bypassing China Manland IP Mode(Be caution when
 proxy_mode:value("G", translate("Global Mode"))
 proxy_mode:value("V", translate("Overseas users watch China video website Mode"))
 
+redir = s:taboption("basic", Flag, "redir", translate("Redir"), translate("Redirs"))
+redir.default = 0
+redir.rmempty = false
+
 cronup = s:taboption("basic", Flag, "cron_mode", translate("Auto Update GFW-List"),
 	translate(string.format("GFW-List Lines： <strong><font color=\"blue\">%s</font></strong> Lines", ND)))
 cronup.default = 0

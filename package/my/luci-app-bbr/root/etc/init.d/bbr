@@ -6,7 +6,7 @@ START=98
 re=0
 
 start(){
-	enable=$(uci get bbr.config.enabled 2>/dev/null)
+	enable=$(uci get bbr.config.enabled)
 	if [ $enable -eq 1 ]; then
 		echo "enable"
 		insmod tcp_bbr
@@ -24,7 +24,7 @@ start(){
 }
 
 stop(){
-    enable=$(uci get bbr.config.enabled 2>/dev/null)	
+    enable=$(uci get bbr.config.enabled)	
     if [ $enable -ne 1 ]; then
 	echo "disable"
 	rmmod tcp_bbr

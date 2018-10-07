@@ -11,6 +11,12 @@ local sys = require "luci.sys"
 m = Map(shadowsocksr, translate("ShadowSocksR Client"))
 
 local server_table = {}
+
+local tool = {
+	"ShadowsocksR",
+	"Shadowsocks",
+}
+
 local encrypt_methods = {
 	"none",
 	"table",
@@ -48,12 +54,14 @@ local protocol = {
 	"auth_sha1_v4",
 	"auth_aes128_sha1",
 	"auth_aes128_md5",
+	"auth_akarin",
 	"auth_chain_a",
 	"auth_chain_b",
 	"auth_chain_c",
 	"auth_chain_d",
 	"auth_chain_e",
 	"auth_chain_f",
+	
 }
 
 obfs = {
@@ -118,6 +126,11 @@ function sec.create(...)
 		luci.http.redirect(sec.extedit % sid)
 		return
 	end
+end
+
+o = sec:option(DummyValue, "tool", translate("Proxy Tool"))
+function o.cfgvalue(...)
+	return Value.cfgvalue(...) or translate("None")
 end
 
 o = sec:option(DummyValue, "alias", translate("Alias"))
@@ -190,6 +203,20 @@ o = s:option(Value, "switch_timeout", translate("Check timout(second)"))
 o.datatype = "uinteger"
 o:depends("enable_switch", "1")
 o.default = 3
+
+o = s:option(Flag, "redir", translate("Redir"),translate("Redirs"))
+o.rmempty = false
+
+o = s:option(Flag, "auto_update", translate("Auto Update"))
+o.rmempty = false
+
+o = s:option(ListValue, "auto_update_time", translate("Update time (every day)"))
+for t = 0,23 do
+o:value(t, t..":00")
+end
+o:depends("auto_update", "1")
+o.default=2
+o.rmempty = false
 
 if nixio.fs.access("/usr/bin/ssr-gfw") then
 o = s:option(ListValue, "run_mode", translate("Running Mode"))

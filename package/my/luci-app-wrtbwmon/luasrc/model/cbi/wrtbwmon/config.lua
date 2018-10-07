@@ -1,10 +1,9 @@
-local m = Map("wrtbwmon", translate("Usage - Configuration"))
+local m = Map("wrtbwmon", "详细设置")
 
-local s = m:section(NamedSection, "general", "wrtbwmon", translate("General settings"))
+local s = m:section(NamedSection, "general", "wrtbwmon", "通用设置")
 
-local o = s:option(Flag, "persist", translate("Persist database"),
-    translate("Check this to persist the database file under /etc/config. "
-    .. "This ensures usage is persisted even across firmware updates."))
+local o = s:option(Flag, "persist", "写入数据库到ROM",
+    "把统计数据写入 /etc/config 中避免重启或者升级后丢失 （需要占用ROM空间并降低闪存寿命）")
 o.rmempty = false
 
 function o.write(self, section, value)

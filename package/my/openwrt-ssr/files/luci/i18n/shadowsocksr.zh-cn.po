@@ -363,7 +363,7 @@ msgid "Server subscription"
 msgstr "服务器订阅"
 
 msgid "Subscribe URL"
-msgstr "订阅地址(删除http://)"
+msgstr "订阅地址"
 
 msgid "Auto Update"
 msgstr "自动更新"
@@ -378,7 +378,7 @@ msgid "Through proxy update"
 msgstr "通过代理更新"
 
 msgid "Custom List"
-msgstr "白名单列表"
+msgstr "GFW自定义列表"
 
 msgid "GFW Custom List"
 msgstr "GFW自定义列表"
@@ -387,7 +387,19 @@ msgid "Please refer to the following writing(remove '#' of the head of line in y
 msgstr "请参考下面列表,自定义添加"
 
 msgid "AD List"
-msgstr "黑名单列表"
+msgstr "去广告列表"
 
 msgid "AD Custom List"
-msgstr "黑名单自定义列表"
+msgstr "自定义去广告列表"
+
+msgid "LOG"
+msgstr "日志"
+
+msgid "Proxy Tool"
+msgstr "代理工具"
+
+msgid "Redir"
+msgstr "劫持所有DNS请求"
+
+msgid "Redirs"
+msgstr "自动将所有客户端的DNS请求都劫持到安全DNS"

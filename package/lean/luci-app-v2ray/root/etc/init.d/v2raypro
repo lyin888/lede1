@@ -193,26 +193,24 @@ reload()
 }
 
 # $1: upstream DNS server
-start_pdnsd()
-{
-	local safe_dns_tcp_udp=`uci get v2ray.@v2ray[0].safe_dns_tcp_udp 2>/dev/null`
+start_pdnsd() {
 	local safe_dns="$1"
-
-	local tcp_dns_list="208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1,8.8.4.4"
+	local tcp_dns_list="208.67.222.222,208.67.220.220,1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"
 	[ -n "$safe_dns" ] && tcp_dns_list="$safe_dns,$tcp_dns_list"
 
-	#killall -9 pdnsd 2>/dev/null && sleep 1
-	kill -9 $(cat /var/run/pdnsd.pid) >/dev/null 2>&1
 
+	#killall -9 pdnsd 2>/dev/null && sleep 1
+	kill -9 $(cat /var/run/pdnsd.pid) >/dev/null 2>&1 
+	
 	mkdir -p /var/etc /var/pdnsd
 	if ! test -f "/var/pdnsd/pdnsd.cache"; then
-    dd if=/dev/zero of="/var/pdnsd/pdnsd.cache" bs=1 count=4 2> /dev/null
-    chown -R nobody.nogroup /var/pdnsd
-  fi
-
+		echo -ne "pd13\000\000\000\000" >/var/pdnsd/pdnsd.cache
+		chown -R nobody.nogroup /var/pdnsd
+	fi
+	
 	cat > /var/etc/pdnsd.conf <<EOF
 global {
-	perm_cache=10240;
+	perm_cache=1024;
 	cache_dir="/var/pdnsd";
 	pid_file = /var/run/pdnsd.pid;
 	run_as="nobody";
@@ -220,17 +218,88 @@ global {
 	server_port = $PDNSD_LOCAL_PORT;
 	status_ctl = on;
 	query_method = tcp_only;
+	neg_domain_pol = off;
+	par_queries = 400;
 	min_ttl=1h;
 	max_ttl=1w;
 	timeout=10;
 	neg_domain_pol=on;
-	proc_limit=2;
-	procq_limit=8;
+	proc_limit=40;
+	procq_limit=60;
 }
 server {
-	label= "fwxxx";
+	label= "ssr-usrdns";
 	ip = $tcp_dns_list;
 	port = 53;
+	timeout=6;
+	uptest=none;
+	interval=10m;
+	purge_cache=off;
+	reject = 74.125.127.102,
+        74.125.155.102,
+        74.125.39.102,
+        74.125.39.113,
+        209.85.229.138,
+        128.121.126.139,
+        159.106.121.75,
+        169.132.13.103,
+        192.67.198.6,
+        202.106.1.2,
+        202.181.7.85,
+        203.161.230.171,
+        203.98.7.65,
+        207.12.88.98,
+        208.56.31.43,
+        209.145.54.50,
+        209.220.30.174,
+        209.36.73.33,
+        211.94.66.147,
+        213.169.251.35,
+        216.221.188.182,
+        216.234.179.13,
+        243.185.187.39,
+        37.61.54.158,
+        4.36.66.178,
+        46.82.174.68,
+        59.24.3.173,
+        64.33.88.161,
+        64.33.99.47,
+        64.66.163.251,
+        65.104.202.252,
+        65.160.219.113,
+        66.45.252.237,
+        69.55.52.253,
+        72.14.205.104,
+        72.14.205.99,
+        78.16.49.15,
+        8.7.198.45,
+        93.46.8.89,
+        37.61.54.158,
+        243.185.187.39,
+        190.93.247.4,
+        190.93.246.4,
+        190.93.245.4,
+        190.93.244.4,
+        65.49.2.178,
+        189.163.17.5,
+        23.89.5.60,
+        49.2.123.56,
+        54.76.135.1,
+        77.4.7.92,
+        118.5.49.6,
+        159.24.3.173,
+        188.5.4.96,
+        197.4.4.12,
+        220.250.64.24,
+        243.185.187.30,
+        249.129.46.48,
+        253.157.14.165;
+    reject_policy = fail;
+}
+server {
+	label= "ssr-pdnsd";
+	ip = $tcp_dns_list;
+	port = 5353;
 	timeout=6;
 	uptest=none;
 	interval=10m;
@@ -240,12 +309,16 @@ EOF
 
 	/usr/sbin/pdnsd -c /var/etc/pdnsd.conf -d
 
-	# Access TCP DNS server through V2Ray tunnel
+	# Access TCP DNS server through v2ray tunnel
 	if iptables -t nat -N pdnsd_output; then
 		iptables -t nat -A pdnsd_output -m set --match-set $vt_np_ipset dst -j RETURN
-		iptables -t nat -A pdnsd_output -p tcp -j REDIRECT --to $SS_REDIR_PORT
+		iptables -t nat -A pdnsd_output -p tcp -j REDIRECT --to $V2RAY_REDIR_PORT
 	fi
 	iptables -t nat -I OUTPUT -p tcp --dport 53 -j pdnsd_output
+	if [ "$vt_redir" = 1 ]; then
+		iptables -t nat -A pdnsd_output -p udp --dport 53 -j REDIRECT --to-ports $PDNSD_LOCAL_PORT
+		iptables -t nat -I PREROUTING -j pdnsd_output
+	fi
 }
 
 stop_pdnsd()
@@ -254,7 +327,7 @@ stop_pdnsd()
 		while iptables -t nat -D OUTPUT -p tcp --dport 53 -j pdnsd_output 2>/dev/null; do :; done
 		iptables -t nat -X pdnsd_output
 	fi
-	killall -9 pdnsd 2>/dev/null
+	kill $(cat /var/run/pdnsd.pid) >/dev/null 2>&1 || killall -9 pdnsd >/dev/null 2>&1 
 	rm -rf /var/pdnsd
 	rm -f /var/etc/pdnsd.conf
 }
@@ -262,6 +335,7 @@ stop_pdnsd()
 # $1: upstream DNS server
 start_dnsforwarder()
 {
+	local vt_redir=`uci get v2ray.@v2ray[0].redir 2>/dev/null`
 	local safe_dns_tcp_udp=`uci get v2ray.@v2ray[0].safe_dns_tcp_udp 2>/dev/null`
 	local safe_dns="$1"
 
@@ -269,7 +343,12 @@ start_dnsforwarder()
 	[ -n "$safe_dns" ] && tcp_dns_list="$safe_dns,$tcp_dns_list"
 	
 	uci set dnsforwarder.@arguments[0].enabled=1
+	if [ "$vt_redir" = 1 ]; then
+	uci set dnsforwarder.@arguments[0].redir=1
+	uci set dnsforwarder.@arguments[0].port=$PDNSD_LOCAL_PORT
+	else
 	uci set dnsforwarder.@arguments[0].redir=0
+	fi
 	uci set dnsforwarder.@arguments[0].dnsmasq=0
 	
 	uci commit dnsforwarder

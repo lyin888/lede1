@@ -1,3 +1,6 @@
+-- Copyright (C) 2018 dz <dingzhong110@gmail.com>
+-- Licensed to the public under the GNU General Public License v3.
+
 local fs = require "nixio.fs"
 local conffile = "/etc/dnsmasq.ssr/custom_list.conf"
 
