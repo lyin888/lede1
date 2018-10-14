@@ -113,13 +113,11 @@ define KernelPackage/dvb-usb-dib0700
   AUTOLOAD:=$(call AutoProbe,dvb-usb-dib0700)
   DEPENDS:= \
 	+PACKAGE_kmod-dvb-tuner-dib0070:kmod-dvb-tuner-dib0070 \
-	+PACKAGE_kmod-dvb-tuner-dib0090:kmod-dvb-tuner-dib0090 \
 	@(PACKAGE_kmod-dvb-dib3000mc||PACKAGE_kmod-dvb-dib7000m||PACKAGE_kmod-dvb-dib7000p||PACKAGE_kmod-dvb-dib8000||PACKAGE_kmod-dvb-dib9000) \
 	+PACKAGE_kmod-dvb-dib3000mc:kmod-dvb-dib3000mc \
 	+PACKAGE_kmod-dvb-dib7000m:kmod-dvb-dib7000m \
 	+PACKAGE_kmod-dvb-dib7000p:kmod-dvb-dib7000p \
-	+PACKAGE_kmod-dvb-dib8000:kmod-dvb-dib8000 \
-	+PACKAGE_kmod-dvb-dib9000:kmod-dvb-dib9000
+	+PACKAGE_kmod-dvb-dib8000:kmod-dvb-dib8000
   $(call AddDepends/dvb-usb)
 endef
 

@@ -204,9 +204,6 @@ o.datatype = "uinteger"
 o:depends("enable_switch", "1")
 o.default = 3
 
-o = s:option(Flag, "redir", translate("Redir"),translate("Redirs"))
-o.rmempty = false
-
 o = s:option(Flag, "auto_update", translate("Auto Update"))
 o.rmempty = false
 
@@ -216,7 +213,6 @@ o:value(t, t..":00")
 end
 o:depends("auto_update", "1")
 o.default=2
-o.rmempty = false
 
 if nixio.fs.access("/usr/bin/ssr-gfw") then
 o = s:option(ListValue, "run_mode", translate("Running Mode"))
@@ -249,6 +245,11 @@ end
 o = s:option(Value, "tunnel_forward", translate("DNS Server IP and Port"))
 o.default = "8.8.4.4:53"
 o.rmempty = false
+
+o = s:option(Flag, "redir", translate("Redir"),translate("Redirs"))
+o.rmempty = false
+o:depends("pdnsd_enable", "1")
+o:depends("pdnsd_enable", "2")
 
 -- [[ SOCKS5 Proxy ]]--
 s = m:section(TypedSection, "socks5_proxy", translate("SOCKS5 Proxy"))

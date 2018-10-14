@@ -13,7 +13,9 @@ define Package/luci-app-njitclient
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
 	TITLE:=NJIT 802.1X Client for LuCI
+	DEPENDS:=+njit8021xclient
 	PKGARCH:=all
+
 endef
 
 define Package/luci-app-njitclient/description

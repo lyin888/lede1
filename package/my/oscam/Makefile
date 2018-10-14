@@ -25,7 +25,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/oscam
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libopenssl +libusb-1.0 +kmod-usb-ohci +kmod-usb-serial +kmod-usb-serial-ch341 +kmod-usb-serial-cp210x +kmod-usb-serial-ftdi +kmod-usb-serial-pl2303 +kmod-usb-uhci +kmod-usb2 +kmod-usb3 +libpcsclite +pcscd +ccid
+  DEPENDS:=+libopenssl +libusb-1.0 +kmod-usb-ohci +kmod-usb-serial +kmod-usb-serial-ch341 +kmod-usb-serial-cp210x +kmod-usb-serial-ftdi +kmod-usb-serial-pl2303 +kmod-usb-uhci +kmod-usb2 +libpcsclite +pcscd +ccid
   TITLE:=OSCam is an Open Source Conditional Access Module software
   URL:=http://www.streamboard.tv/oscam/
 endef

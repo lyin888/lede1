@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/package.mk
 define KernelPackage/bbr
 	SUBMENU:=Network Support
 	TITLE:=bbr tcp congestion control
-	DEPENDS:=@!LINUX_3_18
+	DEPENDS:=@LINUX_4_14
 	FILES:=$(PKG_BUILD_DIR)/tcp_bbr.ko
 	KCONFIG:=
 endef

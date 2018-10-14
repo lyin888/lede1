@@ -150,7 +150,7 @@ boot() {
 start() {
 
 	config_load "frp"
-	local enabled server_addr server_port time token tcp_mux enable_cpool 
+	local enabled server_addr server_port time privilege_token tcp_mux enable_cpool 
 	local pool_count log_level log_max_days login_fail_exit http_proxy protocol
 
 	config_get_bool enabled common enabled 1
