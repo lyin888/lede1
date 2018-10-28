@@ -403,3 +403,6 @@ msgstr "劫持所有DNS请求"
 
 msgid "Redirs"
 msgstr "自动将所有客户端的DNS请求都劫持到安全DNS"
+
+msgid "Delete all severs"
+msgstr "删除所有服务器"

@@ -42,6 +42,14 @@ if nixio.fs.access("/usr/share/shadowsocksr/subscribe.sh") and has_bin("base64")
 	end
 end
 
+o = s:option(Button,"delete",translate("Delete all severs"))
+o.inputstyle = "reset"
+o.write = function()
+  luci.sys.call("nohup bash /usr/share/shadowsocksr/delservers.sh > /tmp/subupdate.log 2>&1 &")
+  luci.sys.call("sleep 3")
+  luci.http.redirect(luci.dispatcher.build_url("admin", "services", "shadowsocksr", "servers"))
+end
+
 -- [[ Servers Manage ]]--
 s = m:section(TypedSection, "servers")
 s.anonymous = true

@@ -9,13 +9,14 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tvheadend
 PKG_VERSION:=4.3
-PKG_RELEASE:=1
+PKG_RELEASE:=$(SHORT_GIT_VER)
 
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=d91f71cfbe0016350dbb3853a42ac4b226d8d47b
+PKG_SOURCE_VERSION:=e0dbf281f6c41910d7c0c097a42c6df54a6e3df6
+SHORT_GIT_VER:=$(shell echo $(PKG_SOURCE_VERSION) | cut -b -7)
 # This is stable git version...
 # PKG_SOURCE_VERSION:=1a0262f5870e4fabd6b9c70a7bf2ebe420bc956e
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(SHORT_GIT_VER).tar.gz
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/505575853/tvheadend.git
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -27,7 +28,7 @@ PKG_FIXUP:=autoreconf
 
 PKG_USE_MIPS16:=0
 
-SHORT_GIT_VER:=$(shell echo $(PKG_SOURCE_VERSION) | cut -b -7)
+
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
@@ -55,6 +56,7 @@ define Package/tvheadend/config
   endmenu
 endef
 
+
 ifeq ($(CONFIG_TVHEADEND_CWC_SUPPORT),)
   CONFIGURE_ARGS += --disable-cwc
 endif
@@ -78,13 +80,6 @@ CONFIGURE_ARGS += \
 	--disable-dbus_1 \
 	--disable-libav \
 	--enable-bundle \
-	--enable-dvben50221 \
-	--enable-tvhcsa \
-	--enable-dvbcsa \
-	--enable-inotify \
-	--enable-epoll \
-	--enable-trace \
-	--nowerror \
         --disable-dvbscan \
         --disable-avahi \
         --disable-hdhomerun_static \
@@ -107,10 +102,9 @@ CONFIGURE_ARGS += \
         --disable-libmfx_static \
         --disable-timeshift
 
-
 define Build/Prepare
 	$(call Build/Prepare/Default)
-	echo 'Tvheadend $(shell echo $(PKG_VERSION)~$(SHORT_GIT_VER)-$(PKG_RELEASE))' \
+	echo 'Tvheadend $(shell echo $(PKG_VERSION)~$(SHORT_GIT_VER))' \
 	> $(PKG_BUILD_DIR)/debian/changelog
 endef
 
